@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.Data", "Webshop.Data\Webshop.Data.csproj", "{BF839816-AE31-478D-BE13-2E9000165083}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.Services", "Webshop.Services\Webshop.Services.csproj", "{30DF53EE-1AA9-4E0F-A29C-7F2A3DED9A55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.API", "Webshop.API\Webshop.API.csproj", "{9C90AF19-A149-4085-A865-892FCC0211C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF839816-AE31-478D-BE13-2E9000165083}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF839816-AE31-478D-BE13-2E9000165083}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF839816-AE31-478D-BE13-2E9000165083}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF839816-AE31-478D-BE13-2E9000165083}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30DF53EE-1AA9-4E0F-A29C-7F2A3DED9A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30DF53EE-1AA9-4E0F-A29C-7F2A3DED9A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30DF53EE-1AA9-4E0F-A29C-7F2A3DED9A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30DF53EE-1AA9-4E0F-A29C-7F2A3DED9A55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C90AF19-A149-4085-A865-892FCC0211C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C90AF19-A149-4085-A865-892FCC0211C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C90AF19-A149-4085-A865-892FCC0211C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C90AF19-A149-4085-A865-892FCC0211C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
