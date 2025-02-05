@@ -2,7 +2,7 @@
 
 namespace Webshop.API.DTOs
 {
-    public class UserRegistrationDto
+    public class UserCredentialsDto
     {
         [Required, EmailAddress]
         public required string Email { get; set; }

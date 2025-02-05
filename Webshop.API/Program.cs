@@ -23,6 +23,8 @@ builder.Services.AddCors(options =>
                       });
 });
 
+// TODO: add JWT auth?
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

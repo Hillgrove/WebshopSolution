@@ -19,6 +19,7 @@ namespace Webshop.API.Controllers
             _userService = userService;
         }
 
+        // TODO: remove when done testing as it exposes all hashed passwords
         // GET: api/<UsersController>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -28,11 +29,11 @@ namespace Webshop.API.Controllers
             return Ok(users);
         }
 
-        // POST api/<UsersController>
+        // POST api/<UsersController>/register
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<UserResponseDto> Register([FromBody] UserRegistrationDto userRegistrationDto)
+        public ActionResult<UserResponseDto> Register([FromBody] UserCredentialsDto userRegistrationDto)
         {
             if (!ModelState.IsValid)
             {
@@ -47,6 +48,33 @@ namespace Webshop.API.Controllers
             };
 
             return CreatedAtAction(nameof(Get), new { id = addedUser.Id }, userResponse);
+        }
+
+        // POST api/<UsersController>/login
+        [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<UserResponseDto> Login([FromBody] UserCredentialsDto userLoginDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            bool isValidUser = _userService.VerifyUserCredentials(userLoginDto.Email, userLoginDto.Password);
+            if (!isValidUser)
+            {
+                return Unauthorized();
+            }
+
+            var user = _userRepository.GetAll().FirstOrDefault(u => u.Email == userLoginDto.Email);
+            var userResponse = new UserResponseDto
+            {
+                Email = userLoginDto.Email
+            };
+
+            return Ok(userResponse);
         }
     }
 }

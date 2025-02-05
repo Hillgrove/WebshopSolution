@@ -18,20 +18,32 @@ export const LoginPage = {
             </div>
         </div>
     `,
+
     data() {
         return {
             loginData: { email: "", password: "" },
             message: ""
         };
     },
+
     methods: {
         async loginUser() {
             try {
                 const url = "https://localhost:7016/api/Users/login";
-                await axios.post(url, this.loginData);
-                this.message = "Login successful!";
+                const response = await axios.post(url, this.loginData);
+
+                if (response.status === 200) {
+                    this.message = "Login successful!";
+                }
+
             } catch (error) {
-                this.message = "Login failed: " + error.message;
+                if (error.response && error.response.status === 400) {
+                    this.message = "Bad request: " + error.response.data;
+                } else if (error.response && error.response.status === 401) {
+                    this.message = "Unauthorized: Invalid email or password";
+                } else {
+                    this.message = "Login failed: " + error.message;
+                }
             }
         }
     }

@@ -1,14 +1,17 @@
-﻿using Webshop.Data.Models;
+﻿using Webshop.Data;
+using Webshop.Data.Models;
 
 namespace Webshop.Services
 {
     public class UserService
     {
         private readonly HashingService _hashingService;
+        private readonly UserRepositoryList _userRepository;
 
-        public UserService(HashingService hashingService)
+        public UserService(HashingService hashingService, UserRepositoryList userRepository)
         {
             _hashingService = hashingService;
+            _userRepository = userRepository;
         }
 
         public User CreateUser(string email, string password)
@@ -20,6 +23,17 @@ namespace Webshop.Services
             };
 
             return createdUser;
+        }
+
+        public bool VerifyUserCredentials(string email, string password)
+        {
+            var user = _userRepository.GetAll().FirstOrDefault(u => u.Email == email);
+            if (user == null)
+            {
+                return false;
+            }
+
+            return _hashingService.VerifyHash(password, user.PasswordHash);
         }
     }
 }
