@@ -2,7 +2,7 @@
 
 namespace Webshop.Data
 {
-    public class UserRepositoryList
+    public class UserRepositoryList : IUserRepository
     {
         private int _nextId = 1;
         private readonly List<User> _users = new();

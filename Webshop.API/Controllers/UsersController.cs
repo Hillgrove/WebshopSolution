@@ -10,12 +10,12 @@ namespace Webshop.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserRepositoryList _userRepository;
+        private readonly IUserRepository _userRepository;
         private readonly UserService _userService;
         private readonly ValidationService _validationService;
         private readonly PwnedPasswordService _pwnedPasswordService;
 
-        public UsersController(UserRepositoryList repository, UserService userService, ValidationService validationService, PwnedPasswordService pwnedPasswordService)
+        public UsersController(IUserRepository repository, UserService userService, ValidationService validationService, PwnedPasswordService pwnedPasswordService)
         {
             _userRepository = repository;
             _userService = userService;

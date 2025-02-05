@@ -6,9 +6,9 @@ namespace Webshop.Services
     public class UserService
     {
         private readonly HashingService _hashingService;
-        private readonly UserRepositoryList _userRepository;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(HashingService hashingService, UserRepositoryList userRepository)
+        public UserService(HashingService hashingService, IUserRepository userRepository)
         {
             _hashingService = hashingService;
             _userRepository = userRepository;

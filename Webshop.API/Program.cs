@@ -3,8 +3,13 @@ using Webshop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Read the connection string from appsettings.json
+var connectionString = builder.Configuration["Database:ConnectionString"]
+    ?? throw new InvalidOperationException("Database connection string is missing from configuration.");
+
 // Add services to the container.
-builder.Services.AddSingleton<UserRepositoryList, UserRepositoryList>();
+//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
+builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddTransient<HashingService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ValidationService>();
