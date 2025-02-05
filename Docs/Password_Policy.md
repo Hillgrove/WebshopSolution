@@ -7,7 +7,7 @@ Denne password policy fastsætter krav til oprettelse, anvendelse og opbevaring 
 
 ### Længde
 - Minimumslængde: **8**
-- Maximumslængde: **64 til 128 tegn**
+- Maximumslængde: **64**
 
 >- Minimum length of the passwords should be enforced by the application. Passwords shorter than 8 characters are considered to be weak (NIST SP800-63B).
 >- Maximum password length should be at least 64 characters to allow passphrases (NIST SP800-63B).

@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<UserRepositoryList, UserRepositoryList>();
 builder.Services.AddTransient<HashingService>();
 builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<ValidationService>();
+builder.Services.AddHttpClient<PwnedPasswordService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

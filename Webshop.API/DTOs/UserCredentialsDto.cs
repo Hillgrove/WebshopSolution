@@ -7,7 +7,7 @@ namespace Webshop.API.DTOs
         [Required, EmailAddress]
         public required string Email { get; set; }
 
-        [Required, MinLength(8)]
+        [Required, MinLength(8), MaxLength(64)]
         public required string Password { get; set; }
     }
 }

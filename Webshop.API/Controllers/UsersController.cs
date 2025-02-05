@@ -12,11 +12,15 @@ namespace Webshop.API.Controllers
     {
         private readonly UserRepositoryList _userRepository;
         private readonly UserService _userService;
+        private readonly ValidationService _validationService;
+        private readonly PwnedPasswordService _pwnedPasswordService;
 
-        public UsersController(UserRepositoryList repository, UserService userService)
+        public UsersController(UserRepositoryList repository, UserService userService, ValidationService validationService, PwnedPasswordService pwnedPasswordService)
         {
             _userRepository = repository;
             _userService = userService;
+            _validationService = validationService;
+            _pwnedPasswordService = pwnedPasswordService;
         }
 
         // TODO: remove when done testing as it exposes all hashed passwords
@@ -33,11 +37,28 @@ namespace Webshop.API.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<UserResponseDto> Register([FromBody] UserCredentialsDto userRegistrationDto)
+        public async Task<ActionResult<UserResponseDto>> Register([FromBody] UserCredentialsDto userRegistrationDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+
+            userRegistrationDto.Email = userRegistrationDto.Email.Trim().ToLower();
+
+            if (!_validationService.IsEmailValid(userRegistrationDto.Email))
+            {
+                return BadRequest("Invalid email format.");
+            }
+
+            if (!_validationService.IsPasswordValidLength(userRegistrationDto.Password))
+            {
+                return BadRequest("Password must be between 8 and 64 characters long");
+            }
+
+            if (await _pwnedPasswordService.IsPasswordPwned(userRegistrationDto.Password))
+            {
+                return BadRequest("This password has been found in data breaches. Please choose another.");
             }
 
             var createdUser = _userService.CreateUser(userRegistrationDto.Email, userRegistrationDto.Password);
