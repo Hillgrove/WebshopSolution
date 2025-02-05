@@ -1,25 +1,30 @@
-const baseURL = "https://localhost:7016/api/Users"
+// Import all page components
+import { HomePage } from "./pages/home.js";
+import { LoginPage } from "./pages/login.js";
+import { RegisterPage } from "./pages/register.js";
+import { AboutPage } from "./pages/about.js";
+import { LayoutComponent } from "./layout-component.js";
 
-Vue.createApp({
-    data() {
-        return {
-            addData: { email: "", password: "" },
-            message: ""
-        }
-    },
+// Define Routes
+const routes = [
+    { path: "/", component: HomePage },
+    { path: "/login", component: LoginPage },
+    { path: "/register", component: RegisterPage },
+    { path: "/about", component: AboutPage }
+];
 
-    methods: {
-        async registerUser() {
-            try {
-                const url = baseURL + "/register"
-                console.log(url)
-                response = await axios.post(url, this.addData)
-                this.message = "User registered successfully!"
-            }
+// Initialize Vue Router
+const router = VueRouter.createRouter({
+    history: VueRouter.createWebHashHistory(),
+    routes
+});
 
-            catch (error) {
-                alert(error.message)
-            }
-        }
-    }
-}).mount('#app')
+// Initialize Vue App
+const app = Vue.createApp({
+    template: `<layout-component></layout-component>`
+});
+app.component("layout-component", LayoutComponent);
+app.use(router);
+app.mount("#app");
+
+console.log("Vue app initialized");
