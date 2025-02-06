@@ -6,5 +6,6 @@ namespace Webshop.Data
     {
         User Add(User newUser);
         IEnumerable<User> GetAll();
+        User? GetUserByEmail(string email);
     }
 }

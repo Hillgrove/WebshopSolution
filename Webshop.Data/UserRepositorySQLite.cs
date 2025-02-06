@@ -61,7 +61,7 @@ namespace Webshop.Data
             using var connection = new SQLiteConnection(_connectionString);
             connection.Open();
 
-            var command = new SQLiteCommand("SELECT Id, Email, PasswordHash, CreatedAt FROM Users", connection);
+            var command = new SQLiteCommand("SELECT * FROM Users", connection);
             using var reader = command.ExecuteReader();
 
             while (reader.Read())
@@ -78,6 +78,29 @@ namespace Webshop.Data
             }
 
             return users;
+        }
+
+        public User? GetUserByEmail(string email)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            connection.Open();
+
+            var command = new SQLiteCommand("SELECT * FROM Users WHERE Email = @Email", connection);
+            command.Parameters.AddWithValue("@Email", email);
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return new User
+                {
+                    Id = reader.GetInt32(0),
+                    Email = reader.GetString(1),
+                    PasswordHash = reader.GetString(2),
+                    CreatedAt = reader.GetDateTime(3)
+                };
+            }
+
+            return null;
         }
     }
 }

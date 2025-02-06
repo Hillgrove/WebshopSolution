@@ -14,6 +14,18 @@ namespace Webshop.Data
             return new List<User>(_users);
         }
 
+        public User? GetUserByEmail(string email)
+        {
+            User? foundUser = _users.FirstOrDefault(u => u.Email == email);
+
+            if (foundUser == null)
+            {
+                return null;
+            }
+
+            return foundUser;
+        }
+
         public User Add(User newUser)
         {
             // TODO: Should I add validation?
