@@ -23,7 +23,7 @@ namespace Webshop.Data
                 CommandText = @"
                 CREATE TABLE IF NOT EXISTS Users (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Email TEXT NOT NULL,
+                    Email TEXT NOT NULL UNIQUE,
                     PasswordHash TEXT NOT NULL,
                     CreatedAt DATETIME NOT NULL
                 )"
@@ -49,9 +49,16 @@ namespace Webshop.Data
             command.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
             command.Parameters.AddWithValue("CreatedAt", newUser.CreatedAt);
 
-            newUser.Id = Convert.ToInt32(command.ExecuteScalar());
+            try
+            {
+                newUser.Id = Convert.ToInt32(command.ExecuteScalar());
+                return newUser;
+            }
 
-            return newUser;
+            catch (SQLiteException ex) when (ex.Message.Contains("UNIQUE constraint failed"))
+            {
+                throw new InvalidOperationException("Email already registered.");
+            }
         }
 
         public IEnumerable<User> GetAll()

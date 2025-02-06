@@ -66,14 +66,19 @@ namespace Webshop.API.Controllers
                 return BadRequest("This password has been found in data breaches. Please choose another.");
             }
 
-            var createdUser = _userService.CreateUser(userRegistrationDto.Email, userRegistrationDto.Password);
-            var addedUser = _userRepository.Add(createdUser);
-            var userResponse = new UserResponseDto
+            try
             {
-                Email = addedUser.Email
-            };
+                var createdUser = _userService.CreateUser(userRegistrationDto.Email, userRegistrationDto.Password);
+                var addedUser = _userRepository.Add(createdUser);
+                var userResponse = new UserResponseDto { Email = addedUser.Email };
 
-            return CreatedAtAction(nameof(Get), new { id = addedUser.Id }, userResponse);
+                return CreatedAtAction(nameof(Get), new { id = addedUser.Id }, userResponse);
+            }
+
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // POST api/<UsersController>/login

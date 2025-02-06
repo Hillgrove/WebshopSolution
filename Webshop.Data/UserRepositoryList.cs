@@ -28,6 +28,11 @@ namespace Webshop.Data
 
         public User Add(User newUser)
         {
+            if (GetUserByEmail(newUser.Email) != null)
+            {
+                throw new InvalidOperationException("Email already registered.");
+            }
+
             // TODO: Should I add validation?
             newUser.Id = _nextId++;
             _users.Add(newUser);
