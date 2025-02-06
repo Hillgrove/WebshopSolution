@@ -27,7 +27,7 @@ namespace Webshop.Services
 
         public bool VerifyUserCredentials(string email, string password)
         {
-            var user = _userRepository.GetAll().FirstOrDefault(u => u.Email == email);
+            var user = _userRepository.GetUserByEmail(email);
             if (user == null)
             {
                 return false;
