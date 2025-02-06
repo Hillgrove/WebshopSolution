@@ -9,5 +9,8 @@ namespace Webshop.API.DTOs
 
         [Required, MinLength(8), MaxLength(64)]
         public required string Password { get; set; }
+
+        // FingerPrintJS string
+        public string? VisitorId { get; set; }
     }
 }

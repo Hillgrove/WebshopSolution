@@ -9,7 +9,7 @@ export const LoginPage = {
                 </div>
                 <div>
                     <label for="password">Password:</label>
-                    <input type="password" v-model="loginData.password" required minlength="8">
+                    <input type="password" v-model="loginData.password" required minlength="8" maxlength="64">
                 </div>
                 <button type="submit">Login</button>
             </form>
@@ -30,7 +30,18 @@ export const LoginPage = {
         async loginUser() {
             try {
                 const url = "https://localhost:7016/api/Users/login";
-                const response = await axios.post(url, this.loginData);
+
+                // Load FingerPrintJS
+                const fp = await window.fpPromise
+                const result = await fp.get()
+                const visitorId = result.visitorId
+                console.log("Visitor ID: " + visitorId)
+
+                // Send login request
+                const response = await axios.post(url, {
+                    ...this.loginData,
+                    visitorId
+                });
 
                 if (response.status === 200) {
                     this.message = "Login successful!";
@@ -40,8 +51,11 @@ export const LoginPage = {
                 if (error.response && error.response.status === 400) {
                     this.message = "Bad request: " + error.response.data;
                 } else if (error.response && error.response.status === 401) {
-                    this.message = "Unauthorized: Invalid email or password";
-                } else {
+                    this.message = "Unauthorized: Invalid email or password"
+                } else if (error.response && error.response.status === 429) {
+                    this.message = "Too many requests. Please try again later."
+                }
+                else {
                     this.message = "Login failed: " + error.message;
                 }
             }

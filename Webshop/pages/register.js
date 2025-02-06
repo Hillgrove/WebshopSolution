@@ -57,9 +57,12 @@ export const RegisterPage = {
             try {
                 const url = "https://localhost:7016/api/Users/register"
                 const response = await axios.post(url, this.registerData)
-                this.message = "User registered successfully! :" + response.data
+                this.message = "User registered successfully!"
             } catch (error) {
-                this.message = "Registration failed: " + error.message
+                this.registerData.password = ""
+                this.passwordFeedback = ""
+                alert("Registration failed: " + error.response.data)
+                //this.message = "Registration failed: " + error.response.data
             }
         }
     }

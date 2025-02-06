@@ -15,6 +15,13 @@ builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddHttpClient<PwnedPasswordService>();
 
+builder.Services.AddSingleton<RateLimitingService>(provider =>
+{
+    int maxAttempts = 3;
+    TimeSpan lockoutDuration = TimeSpan.FromMinutes(10);
+    return new RateLimitingService(maxAttempts, lockoutDuration);
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

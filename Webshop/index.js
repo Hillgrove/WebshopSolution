@@ -5,6 +5,7 @@ import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
 import { LayoutComponent } from "./layout-component.js";
 
+
 // Define Routes
 const routes = [
     { path: "/", component: HomePage },
@@ -12,6 +13,9 @@ const routes = [
     { path: "/register", component: RegisterPage },
     { path: "/about", component: AboutPage }
 ];
+
+// Initialize FingerprintJS
+window.fpPromise = window.FingerprintJS.load();
 
 // Initialize Vue Router
 const router = VueRouter.createRouter({

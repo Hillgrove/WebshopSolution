@@ -14,13 +14,20 @@ namespace Webshop.API.Controllers
         private readonly UserService _userService;
         private readonly ValidationService _validationService;
         private readonly PwnedPasswordService _pwnedPasswordService;
+        private readonly RateLimitingService _rateLimitingService;
 
-        public UsersController(IUserRepository repository, UserService userService, ValidationService validationService, PwnedPasswordService pwnedPasswordService)
+        public UsersController(
+            IUserRepository repository, 
+            UserService userService, 
+            ValidationService validationService, 
+            PwnedPasswordService pwnedPasswordService, 
+            RateLimitingService rateLimitingService)
         {
             _userRepository = repository;
             _userService = userService;
             _validationService = validationService;
             _pwnedPasswordService = pwnedPasswordService;
+            _rateLimitingService = rateLimitingService;
         }
 
         // TODO: remove when done testing as it exposes all hashed passwords
@@ -86,6 +93,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public ActionResult<UserResponseDto> Login([FromBody] UserCredentialsDto userLoginDto)
         {
             if (!ModelState.IsValid)
@@ -93,11 +101,24 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
+            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            string deviceFingerprint = userLoginDto.VisitorId ?? "unknown";
+
+            string rateLimitKey = $"{ipAddress}:{deviceFingerprint}";
+
+            if (_rateLimitingService.IsRateLimited(rateLimitKey))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many login attempts. Please try again later.");
+            }
+
             bool isValidUser = _userService.VerifyUserCredentials(userLoginDto.Email, userLoginDto.Password);
             if (!isValidUser)
             {
+                _rateLimitingService.RegisterAttempt(rateLimitKey);
                 return Unauthorized();
             }
+
+            _rateLimitingService.ResetAttempts(rateLimitKey);
 
             var user = _userRepository.GetUserByEmail(userLoginDto.Email);
             var userResponse = new UserResponseDto
