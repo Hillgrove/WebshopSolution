@@ -18,6 +18,7 @@ namespace Webshop.Data
             using var connection = new SQLiteConnection(_connectionString);
             connection.Open();
 
+            // TODO: If more tables/entities are added, move this to a separate DatabaseInitializer class.
             var command = new SQLiteCommand(connection)
             {
                 CommandText = @"
@@ -37,7 +38,17 @@ namespace Webshop.Data
             using var connection = new SQLiteConnection(_connectionString);
             connection.Open();
 
-            var command = new SQLiteCommand(connection)
+            // **Check if user already exists**
+            using var checkCommand = new SQLiteCommand("SELECT COUNT(1) FROM Users Where Email = @Email", connection);
+            checkCommand.Parameters.AddWithValue("@Email", newUser.Email);
+
+            if (Convert.ToInt32(checkCommand.ExecuteScalar()) > 0)
+            {
+                throw new InvalidOperationException("Email already registered.");
+            }
+
+            // Insert new user
+            var insertCommand = new SQLiteCommand(connection)
             {
                 CommandText = @"
                     INSERT INTO Users (Email, PasswordHash, CreatedAt)
@@ -45,20 +56,12 @@ namespace Webshop.Data
                     SELECT last_insert_rowid()"
             };
 
-            command.Parameters.AddWithValue("@Email", newUser.Email);
-            command.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
-            command.Parameters.AddWithValue("CreatedAt", newUser.CreatedAt);
+            insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
+            insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
+            insertCommand.Parameters.AddWithValue("CreatedAt", newUser.CreatedAt);
 
-            try
-            {
-                newUser.Id = Convert.ToInt32(command.ExecuteScalar());
-                return newUser;
-            }
-
-            catch (SQLiteException ex) when (ex.Message.Contains("UNIQUE constraint failed"))
-            {
-                throw new InvalidOperationException("Email already registered.");
-            }
+            newUser.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
+            return newUser;
         }
 
         public IEnumerable<User> GetAll()
