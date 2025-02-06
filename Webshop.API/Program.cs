@@ -7,6 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration["Database:ConnectionString"]
     ?? throw new InvalidOperationException("Database connection string is missing from configuration.");
 
+// Ratelimiting Options
+int maxAttempts = int.Parse(builder.Configuration["RateLimiting:MaxAttempts"]
+    ?? throw new InvalidOperationException("Rate limiting max attempts is missing from configuration."));
+int duration = int.Parse(builder.Configuration["RateLimiting:LockoutDurationInMinutes"]
+    ?? throw new InvalidOperationException("Rate limiting lockout duration is missing from configuration."));
+TimeSpan lockoutDuration = TimeSpan.FromMinutes(duration);
+
 // Add services to the container.
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
@@ -17,8 +24,6 @@ builder.Services.AddHttpClient<PwnedPasswordService>();
 
 builder.Services.AddSingleton<RateLimitingService>(provider =>
 {
-    int maxAttempts = 3;
-    TimeSpan lockoutDuration = TimeSpan.FromMinutes(10);
     return new RateLimitingService(maxAttempts, lockoutDuration);
 });
 
