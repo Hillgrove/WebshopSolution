@@ -16,14 +16,7 @@ namespace Webshop.Data
 
         public User? GetUserByEmail(string email)
         {
-            User? foundUser = _users.FirstOrDefault(u => u.Email == email);
-
-            if (foundUser == null)
-            {
-                return null;
-            }
-
-            return foundUser;
+            return _users.FirstOrDefault(u => u.Email == email);
         }
 
         public User Add(User newUser)
