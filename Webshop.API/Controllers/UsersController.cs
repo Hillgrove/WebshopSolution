@@ -56,6 +56,11 @@ namespace Webshop.API.Controllers
                 return BadRequest("Password must be between 8 and 64 characters long");
             }
 
+            if (!_validationService.IsPasswordStrong(userRegistrationDto.Password))
+            {
+                return BadRequest("Password not strong enough");
+            }
+
             if (await _pwnedPasswordService.IsPasswordPwned(userRegistrationDto.Password))
             {
                 return BadRequest("This password has been found in data breaches. Please choose another.");
@@ -89,7 +94,7 @@ namespace Webshop.API.Controllers
                 return Unauthorized();
             }
 
-            var user = _userRepository.GetAll().FirstOrDefault(u => u.Email == userLoginDto.Email);
+            var user = _userRepository.GetUserByEmail(userLoginDto.Email);
             var userResponse = new UserResponseDto
             {
                 Email = userLoginDto.Email
