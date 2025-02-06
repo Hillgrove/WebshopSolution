@@ -16,13 +16,13 @@ namespace Webshop.Services
 
         public User CreateUser(string email, string password)
         {
-            var createdUser = new User
+            var passwordHash = _hashingService.GenerateHash(password);
+
+            return new User
             {
                 Email = email,
-                PasswordHash = _hashingService.GenerateHash(password)
+                PasswordHash = passwordHash
             };
-
-            return createdUser;
         }
 
         public bool VerifyUserCredentials(string email, string password)
