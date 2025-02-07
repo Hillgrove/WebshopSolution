@@ -1,60 +1,41 @@
 export const ForgotPasswordPage = {
     template: `
-        <div>
-            <h1>Forgot Password?</h1>
-            <form @submit.prevent="loginUser">
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" v-model="loginData.email" required>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h1>Reset Password</h1>
+                        </div>
+                        <div class="card-body">
+                            <form @submit.prevent="resetPassword">
+                                <div class="form-outline mb-4">
+                                    <input class="form-control" type="email" v-model="loginData.email" id="email" required>
+                                    <label class="form-label" for="email">Email address</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block mb-4">Reset</button>
+                            </form>
+                            <div v-if="message" class="alert alert-info mt-3">
+                                <p>{{ message }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit">Nulstil</button>
-            </form>
-            <div v-if="message">
-                <p>{{ message }}</p>
             </div>
         </div>
     `,
 
     data() {
         return {
-            loginData: { email: "", password: "" },
+            loginData: { email: "" },
             message: ""
         };
     },
 
     methods: {
-        async loginUser() {
-            try {
-                const url = "https://localhost:7016/api/Users/login";
-
-                // Load FingerPrintJS
-                const fp = await window.fpPromise
-                const result = await fp.get()
-                const visitorId = result.visitorId
-                console.log("Visitor ID: " + visitorId)
-
-                // Send login request
-                const response = await axios.post(url, {
-                    ...this.loginData,
-                    visitorId
-                });
-
-                if (response.status === 200) {
-                    this.message = "Login successful!";
-                }
-
-            } catch (error) {
-                if (error.response && error.response.status === 400) {
-                    this.message = "Bad request: " + error.response.data;
-                } else if (error.response && error.response.status === 401) {
-                    this.message = "Unauthorized: Invalid email or password"
-                } else if (error.response && error.response.status === 429) {
-                    this.message = "Too many requests. Please try again later."
-                }
-                else {
-                    this.message = "Login failed: " + error.message;
-                }
-            }
+        resetPassword() {
+            this.message = "If this email exists in our system, you will receive an email with instructions on how to reset your password";
+            // Implement the reset password logic here
         }
     }
 };
