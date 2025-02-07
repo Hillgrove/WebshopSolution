@@ -1,9 +1,10 @@
 // Import all page components
+import { LayoutComponent } from "./layout-component.js";
 import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
 import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
-import { LayoutComponent } from "./layout-component.js";
+import { ForgottenPasswordPage } from "./pages/forgotpassword.js";
 
 
 // Define Routes
@@ -11,7 +12,8 @@ const routes = [
     { path: "/", component: HomePage },
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },
-    { path: "/about", component: AboutPage }
+    { path: "/about", component: AboutPage },
+    { path: "/forgotpassword", component: ForgottenPasswordPage }
 ];
 
 // Initialize FingerprintJS

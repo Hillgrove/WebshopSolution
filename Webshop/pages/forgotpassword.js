@@ -1,23 +1,17 @@
-export const LoginPage = {
+export const ForgottenPasswordPage = {
     template: `
         <div>
-            <h1>Login</h1>
+            <h1>Forgot Password?</h1>
             <form @submit.prevent="loginUser">
                 <div>
                     <label for="email">Email:</label>
                     <input type="email" v-model="loginData.email" required>
                 </div>
-                <div>
-                    <label for="password">Password:</label>
-                    <input type="password" v-model="loginData.password" required minlength="8" maxlength="64">
-                </div>
-                <button type="submit">Login</button>
+                <button type="submit">Nulstil</button>
             </form>
             <div v-if="message">
                 <p>{{ message }}</p>
             </div>
-
-            <router-link to="/forgotpassword">Forgot Password</router-link>
         </div>
     `,
 
