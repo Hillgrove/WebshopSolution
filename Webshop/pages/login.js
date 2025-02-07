@@ -69,10 +69,12 @@ export const LoginPage = {
                 const result = await fp.get();
                 const visitorId = result.visitorId;
 
-                // Send login request
+                // Send login request with credentials
                 const response = await axios.post(url, {
                     ...this.loginData,
                     visitorId
+                }, {
+                    withCredentials: true
                 });
 
                 if (response.status === 200) {

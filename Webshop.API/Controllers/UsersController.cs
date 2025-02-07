@@ -119,6 +119,10 @@ namespace Webshop.API.Controllers
             }
 
             HttpContext.Session.SetString("UserEmail", userLoginDto.Email);
+            Console.WriteLine($"Login successful. Session ID: {HttpContext.Session.Id}");
+            Console.WriteLine($"Stored UserEmail: {HttpContext.Session.GetString("UserEmail")}");
+
+
 
             _rateLimitingService.ResetAttempts(rateLimitKey);
 
@@ -140,7 +144,7 @@ namespace Webshop.API.Controllers
             return Ok(new { message = "Logged out" });
         }
 
-
+        // POST api/<UsersController>/reset-password
         [HttpPost("reset-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult ResetPassword([FromBody] UserEmailDto userEmailDto)
@@ -148,5 +152,42 @@ namespace Webshop.API.Controllers
             // TODO: complete method
             return Ok();
         }
+
+        // POST api/<UsersController>/check-auth
+        [HttpGet("check-auth")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult CheckAuth()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            Console.WriteLine($"CheckAuth Request - Session ID: {HttpContext.Session.Id}");
+            Console.WriteLine($"Stored UserEmail in CheckAuth: {userEmail}");
+
+            return Ok();
+        }
+
+        [HttpGet("debug-session")]
+        public IActionResult DebugSession()
+        {
+            var email = HttpContext.Session.GetString("UserEmail");
+            return Ok(new
+            {
+                email,
+                sessionId = HttpContext.Session.Id
+            });
+        }
+
+        [HttpGet("debug-session-storage")]
+        public IActionResult DebugSessionStorage()
+        {
+            var storedEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(storedEmail))
+            {
+                return Ok(new { message = "No session found", sessionId = HttpContext.Session.Id });
+            }
+
+            return Ok(new { message = "Session is active", storedEmail, sessionId = HttpContext.Session.Id });
+        }
+
     }
 }

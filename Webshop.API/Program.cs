@@ -44,19 +44,24 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = httpOnlySetting;
     options.Cookie.SecurePolicy = securePolicy;
     options.Cookie.SameSite = sameSiteMode;
+    options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAll",
+    options.AddPolicy(name: "AllowFrontend",
                       policy =>
                       {
-                          policy.AllowAnyOrigin()
+                          policy.WithOrigins("https://127.0.0.1:5500")
+                                .SetIsOriginAllowed(_ => true)
+                                .AllowCredentials()
                                 .AllowAnyMethod()
                                 .AllowAnyHeader();
                       });
 });
+
 
 var app = builder.Build();
 
@@ -69,11 +74,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
 app.UseSession();
 
+app.UseRouting();
+
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseEndpoints(endpoints => {
+    endpoints.MapControllers();
+});
 
 app.MapControllers();
 

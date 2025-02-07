@@ -6,7 +6,6 @@ import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
 import { ForgotPasswordPage } from "./pages/forgot_password.js";
 
-
 // Define Routes
 const routes = [
     { path: "/", component: HomePage },
@@ -15,6 +14,10 @@ const routes = [
     { path: "/about", component: AboutPage },
     { path: "/forgot", component: ForgotPasswordPage }
 ];
+
+// enable session credentials
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "https://localhost:7016/api/Users";
 
 // Initialize FingerprintJS
 window.fpPromise = window.FingerprintJS.load();
@@ -27,8 +30,31 @@ const router = VueRouter.createRouter({
 
 // Initialize Vue App
 const app = Vue.createApp({
-    template: `<layout-component></layout-component>`
+    template: `<layout-component></layout-component>`,
+    data() {
+        return {
+            isAuthenticated: false
+        }
+    },
+
+    async created() {
+        await this.checkSession()
+    },
+
+    methods: {
+        async checkSession() {
+            try {
+                await axios.get("/check-auth");
+                this.isAuthenticated = true;
+            }
+
+            catch {
+                this.isAuthenticated = false;
+            }
+        }
+    }
 });
+
 app.component("layout-component", LayoutComponent);
 app.use(router);
 app.mount("#app");
