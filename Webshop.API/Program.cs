@@ -2,19 +2,16 @@ using Webshop.Data;
 using Webshop.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
 
 // Read the connection string from appsettings.json
-var connectionString = builder.Configuration["Database:ConnectionString"]
+var connectionString = config["Database:ConnectionString"]
     ?? throw new InvalidOperationException("Database connection string is missing from configuration.");
 
-// Ratelimiting Options
-int maxAttempts = int.Parse(builder.Configuration["RateLimiting:MaxAttempts"]
-    ?? throw new InvalidOperationException("Rate limiting max attempts is missing from configuration."));
-int duration = int.Parse(builder.Configuration["RateLimiting:LockoutDurationInMinutes"]
-    ?? throw new InvalidOperationException("Rate limiting lockout duration is missing from configuration."));
-TimeSpan lockoutDuration = TimeSpan.FromMinutes(duration);
-
 // Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddTransient<HashingService>();
@@ -22,14 +19,33 @@ builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddHttpClient<PwnedPasswordService>();
 
+// Ratelimiting Options
+var maxAttempts = int.Parse(config["RateLimiting:MaxAttempts"]!);
+var duration = double.Parse(config["RateLimiting:LockoutDurationInMinutes"]!);
+var lockoutDuration = TimeSpan.FromMinutes(duration);
+
+// Ratelimiting
 builder.Services.AddSingleton<RateLimitingService>(provider =>
 {
     return new RateLimitingService(maxAttempts, lockoutDuration);
 });
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Session Options
+var timeoutLength = double.Parse(config["SessionSettings:TimeoutInMinutes"]!);
+var httpOnlySetting = bool.Parse(config["SessionSettings:HttpOnly"]!);
+var securePolicy = Enum.Parse<CookieSecurePolicy>(config["SessionSettings:SecurePolicy"]!);
+var sameSiteMode = Enum.Parse<SameSiteMode>(config["SessionSettings:SameSite"]!);
+
+// Sessions
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(timeoutLength);
+    options.Cookie.HttpOnly = httpOnlySetting;
+    options.Cookie.SecurePolicy = securePolicy;
+    options.Cookie.SameSite = sameSiteMode;
+});
+
 
 builder.Services.AddCors(options =>
 {
@@ -41,8 +57,6 @@ builder.Services.AddCors(options =>
                                 .AllowAnyHeader();
                       });
 });
-
-// TODO: add JWT auth?
 
 var app = builder.Build();
 
@@ -56,6 +70,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
+
+app.UseSession();
 
 app.UseAuthorization();
 

@@ -17,10 +17,10 @@ namespace Webshop.API.Controllers
         private readonly RateLimitingService _rateLimitingService;
 
         public UsersController(
-            IUserRepository repository, 
-            UserService userService, 
-            ValidationService validationService, 
-            PwnedPasswordService pwnedPasswordService, 
+            IUserRepository repository,
+            UserService userService,
+            ValidationService validationService,
+            PwnedPasswordService pwnedPasswordService,
             RateLimitingService rateLimitingService)
         {
             _userRepository = repository;
@@ -44,7 +44,7 @@ namespace Webshop.API.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserResponseDto>> Register([FromBody] UserCredentialsDto userRegistrationDto)
+        public async Task<ActionResult<UserEmailDto>> Register([FromBody] UserCredentialsDto userRegistrationDto)
         {
             if (!ModelState.IsValid)
             {
@@ -77,7 +77,7 @@ namespace Webshop.API.Controllers
             {
                 var createdUser = _userService.CreateUser(userRegistrationDto.Email, userRegistrationDto.Password);
                 var addedUser = _userRepository.Add(createdUser);
-                var userResponse = new UserResponseDto { Email = addedUser.Email };
+                var userResponse = new UserEmailDto { Email = addedUser.Email };
 
                 return CreatedAtAction(nameof(Get), new { id = addedUser.Id }, userResponse);
             }
@@ -94,7 +94,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public ActionResult<UserResponseDto> Login([FromBody] UserCredentialsDto userLoginDto)
+        public ActionResult<UserEmailDto> Login([FromBody] UserCredentialsDto userLoginDto)
         {
             if (!ModelState.IsValid)
             {
@@ -118,15 +118,35 @@ namespace Webshop.API.Controllers
                 return Unauthorized();
             }
 
+            HttpContext.Session.SetString("UserEmail", userLoginDto.Email);
+
             _rateLimitingService.ResetAttempts(rateLimitKey);
 
             var user = _userRepository.GetUserByEmail(userLoginDto.Email);
-            var userResponse = new UserResponseDto
+            var userResponse = new UserEmailDto
             {
                 Email = userLoginDto.Email
             };
 
             return Ok(userResponse);
+        }
+
+        // POST api/<UsersController>/logout
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult logout()
+        {
+            HttpContext.Session.Clear();
+            return Ok(new { message = "Logged out" });
+        }
+
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult ResetPassword([FromBody] UserEmailDto userEmailDto)
+        {
+            // TODO: complete method
+            return Ok();
         }
     }
 }
