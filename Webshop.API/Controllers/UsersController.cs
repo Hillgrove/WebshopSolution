@@ -136,7 +136,6 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult logout()
         {
-            HttpContext.Session.Clear();
             return Ok(new { message = "Logged out" });
         }
 

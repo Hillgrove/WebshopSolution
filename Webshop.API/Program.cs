@@ -30,23 +30,6 @@ builder.Services.AddSingleton<RateLimitingService>(provider =>
     return new RateLimitingService(maxAttempts, lockoutDuration);
 });
 
-// Session Options
-var timeoutLength = double.Parse(config["SessionSettings:TimeoutInMinutes"]!);
-var httpOnlySetting = bool.Parse(config["SessionSettings:HttpOnly"]!);
-var securePolicy = Enum.Parse<CookieSecurePolicy>(config["SessionSettings:SecurePolicy"]!);
-var sameSiteMode = Enum.Parse<SameSiteMode>(config["SessionSettings:SameSite"]!);
-
-// Sessions
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(timeoutLength);
-    options.Cookie.HttpOnly = httpOnlySetting;
-    options.Cookie.SecurePolicy = securePolicy;
-    options.Cookie.SameSite = sameSiteMode;
-});
-
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "AllowAll",
@@ -70,8 +53,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
-
-app.UseSession();
 
 app.UseAuthorization();
 
