@@ -4,7 +4,7 @@ import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
 import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
-import { ForgottenPasswordPage } from "./pages/forgotpassword.js";
+import { ForgotPasswordPage } from "./pages/forgot_password.js";
 
 
 // Define Routes
@@ -13,7 +13,7 @@ const routes = [
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },
     { path: "/about", component: AboutPage },
-    { path: "/forgotpassword", component: ForgottenPasswordPage }
+    { path: "/forgot", component: ForgotPasswordPage }
 ];
 
 // Initialize FingerprintJS

@@ -1,4 +1,4 @@
-export const ForgottenPasswordPage = {
+export const ForgotPasswordPage = {
     template: `
         <div>
             <h1>Forgot Password?</h1>

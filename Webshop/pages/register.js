@@ -1,39 +1,62 @@
 export const RegisterPage = {
     template: `
-        <div>
-            <h1>Register</h1>
-            <form @submit.prevent="registerUser">
-                <div>
-                    <label for="email">Email:</label>
-                    <input type="email" v-model="registerData.email" required>
-                </div>
-                <div>
-                    <label for="password">Password:</label>
-                    <input type="password" v-model="registerData.password" required minlength="8" maxlength="64" @input="analyzePassword">
-                </div>
-                <button type="submit" :disabled="passwordFeedback === 'Very weak' ||
-                                                 passwordFeedback === 'Weak' ||
-                                                 passwordFeedback === '' ||
-                                                 registerData.password.length < 8"
-                >
-                    Register
-                </button>
-            </form>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h1>Sign Up</h1>
+                        </div>
+                        <div class="card-body">
+                            <form @submit.prevent="registerUser">
 
-            <div v-if="passwordFeedback">
-                <p>Password must be between 8 and 64 chars long</p>
-                <p>Password must be at least fair</p>
-                <p>Strength: {{ passwordFeedback }}</p>
-            </div>
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input class="form-control" type="email" v-model="registerData.email" id="email" required>
+                                    <label class="form-label" for="email">Email address</label>
+                                </div>
 
-            <div v-if="message">
-                <p>{{ message }}</p>
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input class="form-control" type="password" v-model="registerData.password" id="password" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <label class="form-label" for="password">Password</label>
+                                </div>
+
+
+                                <!-- Repeat Password input -->
+                                <div class="form-outline mb-4">
+                                    <input class="form-control" type="password" v-model="registerData.repeatPassword" id="repeatpassword" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <label class="form-label" for="repeatpassword">Repeat Password</label>
+                                </div>
+
+                                <!-- Submit button -->
+                                <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordFeedback === 'Very weak' ||
+                                    passwordFeedback === 'Weak' ||
+                                    passwordFeedback === '' ||
+                                    registerData.password.length < 8"
+                                >Register</button>
+
+                            </form>
+
+                            <div v-if="passwordFeedback">
+                                <p>Password must be between 8 and 64 chars long</p>
+                                <p>Password must be at least fair</p>
+                                <p>Strength: {{ passwordFeedback }}</p>
+                            </div>
+
+                            <div v-if="message" class="alert alert-info mt-3">
+                                <p>{{ message }}</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `,
     data() {
         return {
-            registerData: { email: "", password: "" },
+            registerData: { email: "", password: "", repeatPassword: "" },
             message: "",
             passwordFeedback: "",
         }
@@ -60,9 +83,10 @@ export const RegisterPage = {
                 this.message = "User registered successfully!"
             } catch (error) {
                 this.registerData.password = ""
+                this.registerData.repeatPassword = ""
                 this.passwordFeedback = ""
-                alert("Registration failed: " + error.response.data)
-                //this.message = "Registration failed: " + error.response.data
+                // alert("Registration failed: " + error.response.data)
+                this.message = "Registration failed: " + error.response.data
             }
         }
     }
