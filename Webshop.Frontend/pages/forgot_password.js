@@ -55,11 +55,24 @@ export const ForgotPasswordPage = {
 
     methods: {
         async resetPassword() {
-            this.forgotData.email = this.forgotData.email.trim().toLowerCase()
-
             try {
-                const response = await axios.post("/Users/forgot-password", this.forgotData)
-                this.message = "If this email exists in our system, you will receive a password reset email."
+                // Load FingerPrintJS
+                const fp = await window.fpPromise;
+                const result = await fp.get();
+                const visitorId = result.visitorId;
+
+                // Send login request
+                this.forgotData.email = this.forgotData.email.trim().toLowerCase()
+
+                const response = await axios.post("/Users/forgot-password", {
+                    ...this.forgotData,
+                    visitorId
+                });
+
+                if (response.status === 200)
+                {
+                    this.message = "If this email exists in our system, you will receive a password reset email."
+                }
 
             } catch (error) {""
                 this.message = "Error: " + error.message;
