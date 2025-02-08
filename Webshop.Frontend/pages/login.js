@@ -2,7 +2,7 @@ export const LoginPage = {
     template: `
         <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <div class="col-10 col-sm-10 col-md-8 col-lg-6">
 
                     <!-- Card -->
                     <div class="card">
@@ -47,14 +47,12 @@ export const LoginPage = {
 
                         <!-- Card Footer -->
                         <div class="card-footer">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <router-link to="/register">Register</router-link>
-                                    </div>
-                                    <div class="col-6 text-end">
-                                        <router-link to="/forgot">Forgot password?</router-link>
-                                    </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <router-link to="/register">Register</router-link>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <router-link to="/forgot">Forgot password?</router-link>
                                 </div>
                             </div>
                         </div>

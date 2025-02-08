@@ -58,14 +58,12 @@ export const RegisterPage = {
 
                         <!-- Card Footer -->
                         <div class="card-footer">
-                            <div class="container-fluid">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <router-link to="/login">Login</router-link>
-                                    </div>
-                                    <div class="col-6 text-end">
-                                        <router-link to="/forgot">Forgot password?</router-link>
-                                    </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <router-link to="/login">Login</router-link>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <router-link to="/forgot">Forgot password?</router-link>
                                 </div>
                             </div>
                         </div>
