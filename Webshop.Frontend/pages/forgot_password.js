@@ -2,15 +2,21 @@ export const ForgotPasswordPage = {
     template: `
         <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+                <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+                    <!-- Card -->
                     <div class="card">
+
+                        <!-- Card Header -->
                         <div class="card-header text-center">
-                            <h1>Reset Password</h1>
+                            <h1>Password Reset</h1>
                         </div>
+
+                        <!-- Card Body -->
                         <div class="card-body">
                             <form @submit.prevent="resetPassword">
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="email" v-model="loginData.email" id="email" required>
+                                    <input class="form-control" type="email" v-model="forgotData.email" id="email" required>
                                     <label class="form-label" for="email">Email address</label>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Reset</button>
@@ -19,6 +25,21 @@ export const ForgotPasswordPage = {
                                 <p>{{ message }}</p>
                             </div>
                         </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <router-link to="/login">Login</router-link>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <router-link to="/register">Register</router-link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -27,15 +48,22 @@ export const ForgotPasswordPage = {
 
     data() {
         return {
-            loginData: { email: "" },
+            forgotData: { email: "" },
             message: ""
         };
     },
 
     methods: {
-        resetPassword() {
-            this.message = "If this email exists in our system, you will receive an email with instructions on how to reset your password";
-            // Implement the reset password logic here
+        async resetPassword() {
+            this.forgotData.email = this.forgotData.email.trim().toLowerCase()
+
+            try {
+                const response = await axios.post("/Users/forgot-password", this.forgotData)
+                this.message = "If this email exists in our system, you will receive a password reset email."
+
+            } catch (error) {""
+                this.message = "Error: " + error.message;
+            }
         }
     }
 };

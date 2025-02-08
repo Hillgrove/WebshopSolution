@@ -16,6 +16,9 @@ const routes = [
     { path: "/forgot", component: ForgotPasswordPage }
 ];
 
+// Axios baseurl
+axios.defaults.baseURL = "https://localhost:7016/api";
+
 // Initialize FingerprintJS
 window.fpPromise = window.FingerprintJS.load();
 

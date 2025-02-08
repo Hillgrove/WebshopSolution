@@ -2,11 +2,17 @@ export const LoginPage = {
     template: `
         <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+                <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+                    <!-- Card -->
                     <div class="card">
+
+                        <!-- Card Header -->
                         <div class="card-header text-center">
                             <h1>Login</h1>
                         </div>
+
+                        <!-- Card Body -->
                         <div class="card-body">
                             <form @submit.prevent="loginUser">
                                 <!-- Email input -->
@@ -21,31 +27,38 @@ export const LoginPage = {
                                     <label class="form-label" for="password">Password</label>
                                 </div>
 
-                                <!-- Remember me and Forgot Password -->
-                                <div class="row mb-4">
-                                    <div class="col d-flex justify-content-center">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="remember" checked>
-                                            <label class="form-check-label" for="remember">Remember me</label>
-                                        </div>
-                                    </div>
-                                    <div class="col text-end">
-                                        <router-link to="/forgot">Forgot Password?</router-link>
+                                <!-- Remember me -->
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="" id="remember" checked>
+                                        <label class="form-check-label" for="remember">Remember me</label>
                                     </div>
                                 </div>
 
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
 
-                                <!-- Register link -->
-                                <div class="text-center">
-                                    <p>Not a member? <router-link to="/register">Register</router-link></p>
-                                </div>
                             </form>
+
                             <div v-if="message" class="alert alert-info mt-3">
                                 <p>{{ message }}</p>
                             </div>
                         </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <router-link to="/register">Register</router-link>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <router-link to="/forgot">Forgot password?</router-link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -62,15 +75,15 @@ export const LoginPage = {
     methods: {
         async loginUser() {
             try {
-                const url = "https://localhost:7016/api/Users/login";
-
                 // Load FingerPrintJS
                 const fp = await window.fpPromise;
                 const result = await fp.get();
                 const visitorId = result.visitorId;
 
                 // Send login request
-                const response = await axios.post(url, {
+                this.loginData.email = this.loginData.email.trim().toLowerCase()
+
+                const response = await axios.post("/Users/login", {
                     ...this.loginData,
                     visitorId
                 });

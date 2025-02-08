@@ -2,11 +2,17 @@ export const RegisterPage = {
     template: `
         <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+                <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+                    <!-- Card -->
                     <div class="card">
+
+                        <!-- Card Header -->
                         <div class="card-header text-center">
                             <h1>Sign Up</h1>
                         </div>
+
+                        <!-- Card Body -->
                         <div class="card-body">
                             <form @submit.prevent="registerUser">
 
@@ -49,6 +55,21 @@ export const RegisterPage = {
                             </div>
 
                         </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <router-link to="/login">Login</router-link>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <router-link to="/forgot">Forgot password?</router-link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -78,14 +99,12 @@ export const RegisterPage = {
             this.registerData.email = this.registerData.email.trim().toLowerCase()
 
             try {
-                const url = "https://localhost:7016/api/Users/register"
-                const response = await axios.post(url, this.registerData)
+                const response = await axios.post("/Users/register", this.registerData)
                 this.message = "User registered successfully!"
             } catch (error) {
                 this.registerData.password = ""
                 this.registerData.repeatPassword = ""
                 this.passwordFeedback = ""
-                // alert("Registration failed: " + error.response.data)
                 this.message = "Registration failed: " + error.response.data
             }
         }
