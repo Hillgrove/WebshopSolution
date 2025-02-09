@@ -9,28 +9,28 @@ namespace Webshop.Services
 {
     public class UserService
     {
+        private readonly EmailService _emailService;
         private readonly HashingService _hashingService;
         private readonly IUserRepository _userRepository;
-        private readonly ValidationService _validationService;
-        private readonly PwnedPasswordService _pwnedPasswordService;
-        private readonly EmailService _emailService;
+        private readonly ValidationService _validationService;      
         private readonly RateLimitingService _rateLimitingService;
-
+        private readonly PwnedPasswordService _pwnedPasswordService;
 
         public UserService(
+            EmailService emailService,
             HashingService hashingService, 
             IUserRepository userRepository, 
-            ValidationService validationService, 
-            PwnedPasswordService pwnedPasswordService,
-            EmailService emailService,
-            RateLimitingService rateLimitingService)
+            ValidationService validationService,
+            RateLimitingService rateLimitingService,
+            PwnedPasswordService pwnedPasswordService
+            )
         {
+            _emailService = emailService;
             _hashingService = hashingService;
             _userRepository = userRepository;
             _validationService = validationService;
-            _pwnedPasswordService = pwnedPasswordService;
-            _emailService = emailService;
             _rateLimitingService = rateLimitingService;
+            _pwnedPasswordService = pwnedPasswordService;            
         }
 
         public async Task<User> RegiserUserAsync(UserCredentialsDto userCredentialsDto)
@@ -91,24 +91,13 @@ namespace Webshop.Services
 
         public async Task ForgotPasswordAsync(UserEmailDto userEmailDto, string ipAddress, string deviceFingerPrint, string resetLink)
         {
-            string rateLimitKey = $"{ipAddress}:{deviceFingerPrint}";
-
-            if (_rateLimitingService.IsRateLimited(rateLimitKey, "PasswordReset"))
-            {
-                throw new InvalidOperationException("Too many requests. Please try again later.");
-            }
-
             var user = await _userRepository.GetUserByEmailAsync(userEmailDto.Email);
             if (user != null)
             {
                 // TODO: Need explanation of what this is doing
                 await _userRepository.SavePasswordResetTokenAsync(user.Id, resetLink, DateTime.Now.AddMinutes(30));
-                await _emailService.SendPasswordResetEmail(user.Email, resetLink);
-                
+                await _emailService.SendPasswordResetEmail(user.Email, resetLink);                
             }
-
-            _rateLimitingService.RegisterAttempt(rateLimitKey, "PasswordReset");
-
         }
 
         public async Task LoginAsync(UserCredentialsDto userCredentialsDto, string ipAddress)

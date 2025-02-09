@@ -116,6 +116,12 @@ namespace Webshop.API.Controllers
 
             string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             string deviceFingerprint = userEmailDto.VisitorId ?? "unknown";
+            string rateLimitKey = $"{ipAddress}:{deviceFingerprint}";
+
+            if (_rateLimitingService.IsRateLimited(rateLimitKey, "PasswordReset"))
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many requests. Please try again later.");
+            }
 
             try
             {
@@ -126,6 +132,9 @@ namespace Webshop.API.Controllers
                     var resetLink = Url.Action("ResetPassword", "Users", new { token }, Request.Scheme);
                     await _userService.ForgotPasswordAsync(userEmailDto, ipAddress, deviceFingerprint, resetLink);
                 }
+
+                _rateLimitingService.RegisterAttempt(rateLimitKey, "PasswordReset");
+
                 return Ok("If this email exists in our system, you will receive a password reset email.");
             }
 
