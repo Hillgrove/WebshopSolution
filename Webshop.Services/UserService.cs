@@ -1,5 +1,9 @@
 ﻿//using Org.BouncyCastle.Asn1.Ocsp;
+using Microsoft.AspNetCore.Http;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security.Cryptography;
+using System.Security.Policy;
+
 //using System.Security.Policy;
 using Webshop.Data;
 using Webshop.Data.Models;
@@ -89,21 +93,9 @@ namespace Webshop.Services
             }
         }
 
-        public async Task ForgotPasswordAsync(UserEmailDto userEmailDto, string ipAddress, string deviceFingerPrint, string resetLink)
+        public async Task LoginAsync(HttpContext httpContext, UserCredentialsDto userCredentialsDto)
         {
-            var user = await _userRepository.GetUserByEmailAsync(userEmailDto.Email);
-            if (user != null)
-            {
-                // TODO: Need explanation of what this is doing
-                await _userRepository.SavePasswordResetTokenAsync(user.Id, resetLink, DateTime.Now.AddMinutes(30));
-                await _emailService.SendPasswordResetEmail(user.Email, resetLink);                
-            }
-        }
-
-        public async Task LoginAsync(UserCredentialsDto userCredentialsDto, string ipAddress)
-        {
-            string deviceFingerprint = userCredentialsDto.VisitorId ?? "unknown";
-            string rateLimitKey = $"{ipAddress}:{deviceFingerprint}";
+            string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, userCredentialsDto.VisitorId);
 
             if (_rateLimitingService.IsRateLimited(rateLimitKey, "Login"))
             {
@@ -142,7 +134,7 @@ namespace Webshop.Services
             return _hashingService.VerifyHash(password, user.PasswordHash);
         }
 
-        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        private async Task<string> GeneratePasswordResetTokenAsync(User user)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var hashedToken = _hashingService.ComputeSha256Hash(token);
@@ -150,6 +142,23 @@ namespace Webshop.Services
             await _userRepository.SavePasswordResetTokenAsync(user.Id, hashedToken, DateTime.UtcNow.AddMinutes(30));
 
             return token;
+        }
+
+        public async Task ForgotPasswordAsync(HttpContext httpContext, UserEmailDto userEmailDto, string resetLink)
+        {
+            string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, userEmailDto.VisitorId);
+            if (_rateLimitingService.IsRateLimited(rateLimitKey, "Login"))
+            {
+                throw new InvalidOperationException("Too many login attempts. Please try again later.");
+            }
+
+            var user = await _userRepository.GetUserByEmailAsync(userEmailDto.Email);
+            if (user != null && !string.IsNullOrEmpty(user.Email))
+            {
+                var token = await GeneratePasswordResetTokenAsync(user);
+                await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
+                _rateLimitingService.RegisterAttempt(rateLimitKey, "PasswordReset");
+            }
         }
     }
 }

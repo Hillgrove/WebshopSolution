@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Concurrent;
 
 namespace Webshop.Services
 {
@@ -10,6 +11,13 @@ namespace Webshop.Services
         public RateLimitingService(Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)> rateLimitConfigs)
         {
             _rateLimitConfigs = rateLimitConfigs;
+        }
+
+        public static string GenerateRateLimitKey(HttpContext httpContext, string? deviceFingerprint)
+        {
+            string ipAddress = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            string fingerprint = deviceFingerprint ?? "unknown";
+            return $"{ipAddress}:{fingerprint}";
         }
 
         public bool IsRateLimited(string key, string action)
@@ -49,3 +57,4 @@ namespace Webshop.Services
         }
     }
 }
+ 

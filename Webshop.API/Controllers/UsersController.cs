@@ -10,19 +10,22 @@ namespace Webshop.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
         private readonly UserService _userService;
+        private readonly EmailService _emailService;
+        private readonly IUserRepository _userRepository;
         private readonly ValidationService _validationService;
         private readonly RateLimitingService _rateLimitingService;
 
         public UsersController(
-            IUserRepository repository,
             UserService userService,
+            EmailService emailService,
+            IUserRepository repository,
             ValidationService validationService,
             RateLimitingService rateLimitingService)
         {
-            _userRepository = repository;
             _userService = userService;
+            _emailService = emailService;
+            _userRepository = repository;
             _validationService = validationService;
             _rateLimitingService = rateLimitingService;
         }
@@ -73,11 +76,9 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
             try
             {
-                await _userService.LoginAsync(userLoginDto, ipAddress);
+                await _userService.LoginAsync(HttpContext, userLoginDto);
                 return Ok();
             }
 
@@ -95,7 +96,7 @@ namespace Webshop.API.Controllers
         // POST api/<UsersController>/logout
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult logout()
+        public IActionResult Logout()
         {
             // TODO: Complete method
             return Ok(new { message = "Logged out" });
@@ -114,27 +115,15 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            string deviceFingerprint = userEmailDto.VisitorId ?? "unknown";
-            string rateLimitKey = $"{ipAddress}:{deviceFingerprint}";
-
-            if (_rateLimitingService.IsRateLimited(rateLimitKey, "PasswordReset"))
-            {
-                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many requests. Please try again later.");
-            }
-
             try
             {
-                var user = await _userRepository.GetUserByEmailAsync(userEmailDto.Email);
-                if (user != null)
+                string? resetLink = Url.Action("ResetPassword", "Users", new { }, Request.Scheme);
+                if (resetLink == null)
                 {
-                    var token = await _userService.GeneratePasswordResetTokenAsync(user);
-                    var resetLink = Url.Action("ResetPassword", "Users", new { token }, Request.Scheme);
-                    await _userService.ForgotPasswordAsync(userEmailDto, ipAddress, deviceFingerprint, resetLink);
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
                 }
 
-                _rateLimitingService.RegisterAttempt(rateLimitKey, "PasswordReset");
-
+                await _userService.ForgotPasswordAsync(HttpContext, userEmailDto, resetLink);
                 return Ok("If this email exists in our system, you will receive a password reset email.");
             }
 
