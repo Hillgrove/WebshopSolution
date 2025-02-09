@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Net.Http;
 using System.Security.Cryptography;
 using Webshop.Data;
 using Webshop.Data.Models;
@@ -61,8 +62,10 @@ namespace Webshop.Services
             return addedUser;
         }
 
-        public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        public async Task ResetPasswordAsync(HttpContext httpContext, ResetPasswordDto resetPasswordDto)
         {
+            string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, resetPasswordDto.VisitorId);
+
             var hashedToken = _hashingService.ComputeSha256Hash(resetPasswordDto.Token);
             var user = await _userRepository.GetUserByPasswordResetTokenAsync(hashedToken);
 
@@ -81,6 +84,8 @@ namespace Webshop.Services
             user.PasswordResetToken = null;
             user.PasswordResetTokenExpiration = null;
             await _userRepository.UpdateAsync(user);
+
+            _rateLimitingService.ResetAttempts(rateLimitKey, "PasswordReset");
 
             if (user.Email != null)
             {
@@ -129,7 +134,7 @@ namespace Webshop.Services
             return _hashingService.VerifyHash(password, user.PasswordHash);
         }
 
-        private async Task<string> GeneratePasswordResetTokenAsync(User user)
+        private async Task<string> GenerateAndSavePasswordResetTokenAsync(User user)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
             var hashedToken = _hashingService.ComputeSha256Hash(token);
@@ -142,7 +147,7 @@ namespace Webshop.Services
         public async Task ForgotPasswordAsync(HttpContext httpContext, UserEmailDto userEmailDto, string resetLink)
         {
             string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, userEmailDto.VisitorId);
-            if (_rateLimitingService.IsRateLimited(rateLimitKey, "Login"))
+            if (_rateLimitingService.IsRateLimited(rateLimitKey, "PasswordReset"))
             {
                 throw new InvalidOperationException("Too many login attempts. Please try again later.");
             }
@@ -150,7 +155,7 @@ namespace Webshop.Services
             var user = await _userRepository.GetUserByEmailAsync(userEmailDto.Email);
             if (user != null && !string.IsNullOrEmpty(user.Email))
             {
-                var token = await GeneratePasswordResetTokenAsync(user);
+                var token = await GenerateAndSavePasswordResetTokenAsync(user);
                 await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
                 _rateLimitingService.RegisterAttempt(rateLimitKey, "PasswordReset");
             }
