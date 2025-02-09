@@ -56,10 +56,8 @@ export const ForgotPasswordPage = {
     methods: {
         async resetPassword() {
             try {
-                // Load FingerPrintJS
-                const fp = await window.fpPromise;
-                const result = await fp.get();
-                const visitorId = result.visitorId;
+                // Retrieve visitorId from local storage
+                const visitorId = localStorage.getItem('visitorId');
 
                 // Send login request
                 this.forgotData.email = this.forgotData.email.trim().toLowerCase()

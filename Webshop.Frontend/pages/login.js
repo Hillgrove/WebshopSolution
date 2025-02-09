@@ -73,10 +73,8 @@ export const LoginPage = {
     methods: {
         async loginUser() {
             try {
-                // Load FingerPrintJS
-                const fp = await window.fpPromise;
-                const result = await fp.get();
-                const visitorId = result.visitorId;
+                // Retrieve visitorId from local storage
+                const visitorId = localStorage.getItem('visitorId');
 
                 // Send login request
                 this.loginData.email = this.loginData.email.trim().toLowerCase()

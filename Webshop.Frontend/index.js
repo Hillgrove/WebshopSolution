@@ -21,8 +21,21 @@ const routes = [
 // Axios baseurl
 axios.defaults.baseURL = "https://localhost:7016/api";
 
-// Initialize FingerprintJS
-window.fpPromise = window.FingerprintJS.load();
+// Check if visitorId exists in local storage
+let visitorId = localStorage.getItem('visitorId');
+
+if (!visitorId) {
+    // Initialize FingerprintJS and store visitorId in local storage
+    window.fpPromise = window.FingerprintJS.load().then(fp => {
+        return fp.get();
+    }).then(result => {
+        visitorId = result.visitorId;
+        localStorage.setItem('visitorId', visitorId);
+        console.log("Generated new Visitor ID:", visitorId);
+    });
+} else {
+    console.log("Using existing Visitor ID:", visitorId);
+}
 
 // Initialize Vue Router
 const router = VueRouter.createRouter({

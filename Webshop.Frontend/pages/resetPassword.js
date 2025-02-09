@@ -46,6 +46,7 @@ export const ResetPasswordPage = {
 
     created() {
         this.token = this.$route.query.token;
+        this.token = decodeURIComponent(this.$route.query.token.replace(/ /g, '+'));
     },
 
     methods: {
@@ -55,13 +56,19 @@ export const ResetPasswordPage = {
                 return;
             }
 
+            // Retrieve visitorId from local storage
+            const visitorId = localStorage.getItem('visitorId');
+
             try {
                 const payload = {
                     newPassword: this.resetData.password,
                     token: this.token
                 };
 
-                const response = await axios.post("/Users/reset-password", payload);
+                const response = await axios.post("/Users/reset-password", {
+                    ...payload,
+                    visitorId
+                });
 
                 console.log("Response:", response);
 
