@@ -7,9 +7,6 @@ namespace Webshop.Shared.DTOs
         [Required]
         public required string Token { get; set; }
 
-        [Required, EmailAddress]
-        public required string Email { get; set; }
-
         [Required, MinLength(8), MaxLength(64)]
         public required string NewPassword { get; set; }
     }
