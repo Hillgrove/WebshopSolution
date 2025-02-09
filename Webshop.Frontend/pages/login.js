@@ -52,7 +52,7 @@ export const LoginPage = {
                                     <router-link to="/register">Register</router-link>
                                 </div>
                                 <div class="col-6 text-end">
-                                    <router-link to="/forgot">Forgot password?</router-link>
+                                    <router-link to="/forgot-password">Forgot password?</router-link>
                                 </div>
                             </div>
                         </div>
