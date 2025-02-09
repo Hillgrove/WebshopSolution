@@ -117,7 +117,6 @@ namespace Webshop.API.Controllers
 
             try
             {
-                //string? resetLink = Url.Action("ResetPassword", "Users", new { }, Request.Scheme);
                 string? resetLink = "https://127.0.0.1:5500/#/reset-password";
                 if (resetLink == null)
                 {
@@ -147,7 +146,7 @@ namespace Webshop.API.Controllers
 
             try
             {
-                await _userService.ResetPasswordAsync(resetPasswordDto);
+                await _userService.ResetPasswordAsync(HttpContext, resetPasswordDto);
                 return Ok("Password has been reset successfully.");
             }
 
