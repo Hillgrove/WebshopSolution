@@ -9,5 +9,7 @@ namespace Webshop.Shared.DTOs
 
         [Required, MinLength(8), MaxLength(64)]
         public required string NewPassword { get; set; }
+        
+        public string? VisitorId { get; set; }
     }
 }
