@@ -117,7 +117,8 @@ namespace Webshop.API.Controllers
 
             try
             {
-                string? resetLink = Url.Action("ResetPassword", "Users", new { }, Request.Scheme);
+                //string? resetLink = Url.Action("ResetPassword", "Users", new { }, Request.Scheme);
+                string? resetLink = "https://127.0.0.1:5500/#/reset-password";
                 if (resetLink == null)
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");

@@ -42,10 +42,10 @@ builder.Services.AddSingleton<RateLimitingService>(provider =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "AllowAll",
+    options.AddPolicy(name: "AllowSpecificOrigin",
                       policy =>
                       {
-                          policy.AllowAnyOrigin()
+                          policy.WithOrigins("https://127.0.0.1:5500")
                                 .AllowAnyMethod()
                                 .AllowAnyHeader();
                       });
@@ -62,7 +62,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOrigin");
 
 app.UseAuthorization();
 
