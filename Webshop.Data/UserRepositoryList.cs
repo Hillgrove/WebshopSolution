@@ -9,27 +9,55 @@ namespace Webshop.Data
 
         public UserRepositoryList() { }
 
-        public IEnumerable<User> GetAll()
+        public Task<IEnumerable<User>> GetAllAsync()
         {
-            return new List<User>(_users);
+            return Task.FromResult<IEnumerable<User>>(new List<User>(_users));
         }
 
-        public User? GetUserByEmail(string email)
+        public Task<User?> GetUserByEmailAsync(string email)
         {
-            return _users.FirstOrDefault(u => u.Email == email);
+            return Task.FromResult(_users.FirstOrDefault(u => u.Email == email));
         }
 
-        public User Add(User newUser)
+        public Task<User> AddAsync(User newUser)
         {
-            if (GetUserByEmail(newUser.Email) != null)
+            if (_users.Any(u => u.Email == newUser.Email))
             {
                 throw new InvalidOperationException("Email already registered.");
             }
 
-            // TODO: Should I add validation?
             newUser.Id = _nextId++;
             _users.Add(newUser);
-            return newUser;
+            return Task.FromResult(newUser);
+        }
+
+        public Task SavePasswordResetTokenAsync(int userId, string token, DateTime expiration)
+        {
+            var user = _users.FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                user.PasswordResetToken = token;
+                user.PasswordResetTokenExpiration = expiration;
+            }
+            return Task.CompletedTask;
+        }
+
+        public Task<User?> GetUserByPasswordResetTokenAsync(string token)
+        {
+            return Task.FromResult(_users.FirstOrDefault(u => u.PasswordResetToken == token));
+        }
+
+        public Task UpdateAsync(User user)
+        {
+            var existingUser = _users.FirstOrDefault(u => u.Id == user.Id);
+            if (existingUser != null)
+            {
+                existingUser.Email = user.Email;
+                existingUser.PasswordHash = user.PasswordHash;
+                existingUser.PasswordResetToken = user.PasswordResetToken;
+                existingUser.PasswordResetTokenExpiration = user.PasswordResetTokenExpiration;
+            }
+            return Task.CompletedTask;
         }
     }
 }

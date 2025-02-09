@@ -6,9 +6,12 @@ namespace Webshop.Data.Models
     {
         public int Id { get; set; }
         [Required, EmailAddress]
-        public required string Email { get; set; }
-        public required string PasswordHash { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string? Email { get; set; }
+        public string? PasswordHash { get; set; }
+        public DateTime CreatedAt { get; internal set; } = DateTime.UtcNow;
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiration { get; set; }
+
 
         // TODO: Add validation methods? should they be in a validation lib instead?
     }

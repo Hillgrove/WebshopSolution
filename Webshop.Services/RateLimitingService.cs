@@ -4,21 +4,25 @@ namespace Webshop.Services
 {
     public class RateLimitingService
     {
-        private readonly ConcurrentDictionary<string, (int Attempts, DateTime LastAttempt)> _loginAttempts = new();
-        private readonly int _maxAttempts;
-        private readonly TimeSpan _lockoutDuration;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, (int Attempts, DateTime LastAttempt)>> _attempts = new();
+        private readonly Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)> _rateLimitConfigs;
 
-        public RateLimitingService(int maxAttempts, TimeSpan lockoutDuration)
+        public RateLimitingService(Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)> rateLimitConfigs)
         {
-            _maxAttempts = maxAttempts;
-            _lockoutDuration = lockoutDuration;
+            _rateLimitConfigs = rateLimitConfigs;
         }
 
-        public bool IsRateLimited(string key)
+        public bool IsRateLimited(string key, string action)
         {
-            if (_loginAttempts.TryGetValue(key, out var attemptInfo))
+            if (!_rateLimitConfigs.TryGetValue(action, out var config))
             {
-                if (attemptInfo.Attempts >= _maxAttempts && DateTime.UtcNow - attemptInfo.LastAttempt < _lockoutDuration)
+                throw new ArgumentException($"Rate limiting configuration for action '{action}' not found.");
+            }
+
+            if (_attempts.TryGetValue(action, out var actionAttempts) &&
+                    actionAttempts.TryGetValue(key, out var attemptInfo))
+            {
+                if (attemptInfo.Attempts >= config.MaxAttempts && DateTime.UtcNow - attemptInfo.LastAttempt < config.LockoutDuration)
                 {
                     return true;
                 }
@@ -27,17 +31,21 @@ namespace Webshop.Services
             return false;
         }
 
-        public void RegisterAttempt(string key)
+        public void RegisterAttempt(string key, string action)
         {
-            _loginAttempts.AddOrUpdate(
+            var actionAttempts = _attempts.GetOrAdd(action, _ => new ConcurrentDictionary<string, (int Attempts, DateTime LastAttempt)>());
+            actionAttempts.AddOrUpdate(
                 key,
                 addValueFactory: _ => (1, DateTime.UtcNow),
                 updateValueFactory: (_, attemptInfo) => (attemptInfo.Attempts + 1, DateTime.UtcNow));
         }
 
-        public void ResetAttempts(string key)
+        public void ResetAttempts(string key, string action)
         {
-            _loginAttempts.TryRemove(key, out _);
+            if (_attempts.TryGetValue(action, out var actionAttempts))
+            {
+                actionAttempts.TryRemove(key, out _);
+            }
         }
     }
 }

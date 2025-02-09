@@ -4,8 +4,11 @@ namespace Webshop.Data
 {
     public interface IUserRepository
     {
-        User Add(User newUser);
-        IEnumerable<User> GetAll();
-        User? GetUserByEmail(string email);
+        Task<User> AddAsync(User newUser);
+        Task<IEnumerable<User>> GetAllAsync();
+        Task<User?> GetUserByEmailAsync(string email);
+        Task SavePasswordResetTokenAsync(int userId, string token, DateTime expiration);
+        Task<User?> GetUserByPasswordResetTokenAsync(string token);
+        Task UpdateAsync(User user);
     }
 }

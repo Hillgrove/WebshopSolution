@@ -3,6 +3,7 @@ using Webshop.Data.Models;
 
 namespace Webshop.Data
 {
+    // TODO: Check if I need all the properties in the various commands
     public class UserRepositorySQLite : IUserRepository
     {
         private readonly string _connectionString;
@@ -26,17 +27,19 @@ namespace Webshop.Data
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                     Email TEXT NOT NULL UNIQUE,
                     PasswordHash TEXT NOT NULL,
-                    CreatedAt DATETIME NOT NULL
+                    CreatedAt DATETIME NOT NULL,
+                    PasswordResetToken TEXT,
+                    PasswordResetTokenExpiration DATETIME
                 )"
             };
 
             command.ExecuteNonQuery();
         }
 
-        public User Add(User newUser)
+        public async Task<User> AddAsync(User newUser)
         {
             using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             // **Check if user already exists**
             using var checkCommand = new SQLiteCommand("SELECT COUNT(1) FROM Users Where Email = @Email", connection);
@@ -64,24 +67,26 @@ namespace Webshop.Data
             return newUser;
         }
 
-        public IEnumerable<User> GetAll()
+        public async Task<IEnumerable<User>> GetAllAsync()
         {
             var users = new List<User>();
 
             using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             var command = new SQLiteCommand("SELECT * FROM Users", connection);
             using var reader = command.ExecuteReader();
 
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 var user = new User
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
                     PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3)
+                    CreatedAt = reader.GetDateTime(3),
+                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
                 };
 
                 users.Add(user);
@@ -90,27 +95,98 @@ namespace Webshop.Data
             return users;
         }
 
-        public User? GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
             using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             var command = new SQLiteCommand("SELECT * FROM Users WHERE Email = @Email", connection);
             command.Parameters.AddWithValue("@Email", email);
 
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
                 return new User
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
                     PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3)
+                    CreatedAt = reader.GetDateTime(3),
+                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
                 };
             }
 
             return null;
+        }
+
+        public async Task SavePasswordResetTokenAsync(int userId, string token, DateTime expiration)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SQLiteCommand(connection)
+            {
+                CommandText = @"
+                    UPDATE Users
+                    SET PasswordResetToken = @Token, PasswordResetTokenExpiration = @Expiration
+                    WHERE Id = @UserId"
+            };
+
+            command.Parameters.AddWithValue("@Token", token);
+            command.Parameters.AddWithValue("@Expiration", expiration);
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<User?> GetUserByPasswordResetTokenAsync(string token)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SQLiteCommand("SELECT * FROM Users WHERE PasswordResetToken = @Token", connection);
+            command.Parameters.AddWithValue("@Token", token);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Id = reader.GetInt32(0),
+                    Email = reader.GetString(1),
+                    PasswordHash = reader.GetString(2),
+                    CreatedAt = reader.GetDateTime(3),
+                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                };
+            }
+
+            return null;
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SQLiteCommand(connection)
+            {
+                CommandText = @"
+                    UPDATE Users
+                    SET Email = @Email, PasswordHash = @PasswordHash, CreatedAt = @CreatedAt,
+                        PasswordResetToken = @PasswordResetToken, PasswordResetTokenExpiration = @PasswordResetTokenExpiration
+                    WHERE Id = @Id"
+            };
+
+            command.Parameters.AddWithValue("@Email", user.Email);
+            command.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
+            command.Parameters.AddWithValue("@CreatedAt", user.CreatedAt);
+            command.Parameters.AddWithValue("@PasswordResetToken", user.PasswordResetToken);
+            command.Parameters.AddWithValue("@PasswordResetTokenExpiration", user.PasswordResetTokenExpiration);
+            command.Parameters.AddWithValue("@Id", user.Id);
+
+            await command.ExecuteNonQueryAsync();
         }
     }
 }

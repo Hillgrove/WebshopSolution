@@ -1,10 +1,10 @@
 // Import all page components
-import { LayoutComponent } from "./layout-component.js";
+import { LayoutComponent } from "./layoutComponent.js";
 import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
 import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
-import { ForgotPasswordPage } from "./pages/forgot_password.js";
+import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 
 
 // Define Routes

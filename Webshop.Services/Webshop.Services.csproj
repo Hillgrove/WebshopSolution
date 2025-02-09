@@ -8,11 +8,14 @@
 
   <ItemGroup>
     <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
+    <PackageReference Include="MailKit" Version="4.10.0" />
+    <PackageReference Include="MimeKit" Version="4.10.0" />
     <PackageReference Include="zxcvbn-core" Version="7.0.92" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Webshop.Data\Webshop.Data.csproj" />
+    <ProjectReference Include="..\Webshop.Shared\Webshop.Shared.csproj" />
   </ItemGroup>
 
 </Project>

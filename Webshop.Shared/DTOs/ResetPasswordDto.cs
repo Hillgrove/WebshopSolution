@@ -1,16 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Webshop.API.DTOs
+namespace Webshop.Shared.DTOs
 {
-    public class UserCredentialsDto
+    public class ResetPasswordDto
     {
+        [Required]
+        public required string Token { get; set; }
+
         [Required, EmailAddress]
         public required string Email { get; set; }
 
         [Required, MinLength(8), MaxLength(64)]
-        public required string Password { get; set; }
-
-        // FingerPrintJS string
-        public string? VisitorId { get; set; }
+        public required string NewPassword { get; set; }
     }
 }

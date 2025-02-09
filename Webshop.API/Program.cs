@@ -17,17 +17,27 @@ builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQL
 builder.Services.AddTransient<HashingService>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<ValidationService>();
+builder.Services.AddTransient<EmailService>();
 builder.Services.AddHttpClient<PwnedPasswordService>();
 
+
 // Ratelimiting Options
-var maxAttempts = int.Parse(config["RateLimiting:MaxAttempts"]!);
-var duration = double.Parse(config["RateLimiting:LockoutDurationInMinutes"]!);
-var lockoutDuration = TimeSpan.FromMinutes(duration);
+var rateLimitConfigs = new Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)>
+{
+    ["Login"] = (
+        int.Parse(config["RateLimiting:Login:MaxAttempts"]!),
+        TimeSpan.FromMinutes(double.Parse(config["RateLimiting:Login:LockoutDurationInMinutes"]!))
+    ),
+    ["PasswordReset"] = (
+        int.Parse(config["RateLimiting:PasswordReset:MaxAttempts"]!),
+        TimeSpan.FromMinutes(double.Parse(config["RateLimiting:PasswordReset:LockoutDurationInMinutes"]!))
+    )
+};
 
 // Ratelimiting
 builder.Services.AddSingleton<RateLimitingService>(provider =>
 {
-    return new RateLimitingService(maxAttempts, lockoutDuration);
+    return new RateLimitingService(rateLimitConfigs);
 });
 
 builder.Services.AddCors(options =>
