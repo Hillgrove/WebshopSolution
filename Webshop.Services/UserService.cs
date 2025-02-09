@@ -1,10 +1,5 @@
-﻿//using Org.BouncyCastle.Asn1.Ocsp;
-using Microsoft.AspNetCore.Http;
-using Org.BouncyCastle.Asn1.Ocsp;
+﻿using Microsoft.AspNetCore.Http;
 using System.Security.Cryptography;
-using System.Security.Policy;
-
-//using System.Security.Policy;
 using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Shared.DTOs;
