@@ -12,14 +12,14 @@ var connectionString = config["Database:ConnectionString"]
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
-builder.Services.AddTransient<HashingService>();
-builder.Services.AddTransient<UserService>();
-builder.Services.AddTransient<ValidationService>();
-builder.Services.AddTransient<EmailService>();
-builder.Services.AddHttpClient<PwnedPasswordService>();
 
+//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
+builder.Services.AddTransient<UserService>();
+builder.Services.AddTransient<EmailService>();
+builder.Services.AddTransient<HashingService>();
+builder.Services.AddHttpClient<PasswordService>();
+builder.Services.AddTransient<ValidationService>();
+builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 
 // Ratelimiting Options
 var rateLimitConfigs = new Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)>
