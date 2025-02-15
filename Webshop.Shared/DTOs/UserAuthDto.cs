@@ -2,7 +2,7 @@
 
 namespace Webshop.Shared.DTOs
 {
-    public class UserCredentialsDto
+    public class UserAuthDto
     {
         [Required, EmailAddress]
         public required string Email { get; set; }
@@ -11,6 +11,6 @@ namespace Webshop.Shared.DTOs
         public required string Password { get; set; }
 
         // FingerPrintJS string
-        public string? VisitorId { get; set; }
+        public required string VisitorId { get; set; }
     }
 }

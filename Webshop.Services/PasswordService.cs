@@ -1,12 +1,12 @@
 ﻿namespace Webshop.Services
 {
-    public class PwnedPasswordService
+    public class PasswordService
     {
         private readonly HttpClient _httpClient;
         private readonly HashingService _hashingService;
         private const string HIBP_API = "https://api.pwnedpasswords.com/range/";
 
-        public PwnedPasswordService(HttpClient httpClient, HashingService hashingService)
+        public PasswordService(HttpClient httpClient, HashingService hashingService)
         {
             _httpClient = httpClient;
             _hashingService = hashingService;
@@ -20,6 +20,18 @@
 
             var response = await _httpClient.GetStringAsync(HIBP_API + prefix);
             return response.Split("\n").Any(line => line.StartsWith(suffix));
+        }
+
+        public bool IsPasswordValidLength(string password)
+        {
+            return password.Length >= 8 &&
+                   password.Length <= 64;
+        }
+
+        public bool IsPasswordStrong(string password)
+        {
+            var score = Zxcvbn.Core.EvaluatePassword(password).Score; // Returns 0-4: very weak to very strong
+            return score >= 2; // must be atleast fair
         }
     }
 }

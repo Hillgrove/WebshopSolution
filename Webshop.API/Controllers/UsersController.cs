@@ -13,6 +13,7 @@ namespace Webshop.API.Controllers
         private readonly UserService _userService;
         private readonly EmailService _emailService;
         private readonly IUserRepository _userRepository;
+        private readonly PasswordService _passwordService;
         private readonly ValidationService _validationService;
         private readonly RateLimitingService _rateLimitingService;
 
@@ -20,12 +21,14 @@ namespace Webshop.API.Controllers
             UserService userService,
             EmailService emailService,
             IUserRepository repository,
+            PasswordService passwordService,
             ValidationService validationService,
             RateLimitingService rateLimitingService)
         {
             _userService = userService;
             _emailService = emailService;
             _userRepository = repository;
+            _passwordService = passwordService;
             _validationService = validationService;
             _rateLimitingService = rateLimitingService;
         }
@@ -44,7 +47,7 @@ namespace Webshop.API.Controllers
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserEmailDto>> Register([FromBody] UserCredentialsDto userCredentialsDto)
+        public async Task<ActionResult<UserDto>> Register([FromBody] UserAuthDto userAuthDto)
         {
             if (!ModelState.IsValid)
             {
@@ -53,13 +56,26 @@ namespace Webshop.API.Controllers
 
             try
             {
-                var userResponse = await _userService.RegiserUserAsync(userCredentialsDto);
-                return CreatedAtAction(nameof(Get), new { id = userResponse.Id }, userResponse);
+                var user = await _userService.RegisterUserAsync(userAuthDto);
+                var userDto = new UserDto { Id = user.Id, Email = user.Email };
+                return CreatedAtAction(nameof(Get), new { id = userDto.Id }, userDto);
             }
 
-            catch (InvalidOperationException ex)
+            catch (ArgumentException ex) when (ex.ParamName == nameof(userAuthDto.Email))
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Invalid email format.");
+            }
+            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordValidLength))
+            {
+                return BadRequest("Password is too short.");
+            }
+            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordStrong))
+            {
+                return BadRequest("Password is not strong enough.");
+            }
+            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordPwned))
+            {
+                return BadRequest("This password has been found in data breaches. Please choose another.");
             }
         }
 
@@ -69,7 +85,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<ActionResult> Login([FromBody] UserCredentialsDto userLoginDto)
+        public async Task<ActionResult> Login([FromBody] UserAuthDto userAuthDto)
         {
             if (!ModelState.IsValid)
             {
@@ -78,18 +94,18 @@ namespace Webshop.API.Controllers
 
             try
             {
-                await _userService.LoginAsync(HttpContext, userLoginDto);
+                await _userService.LoginAsync(HttpContext, userAuthDto);
                 return Ok();
             }
-
-            catch (InvalidOperationException ex)
+            
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                return StatusCode(StatusCodes.Status429TooManyRequests, ex.Message);
+                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many login attempts. Please try again later.");
             }
 
             catch (UnauthorizedAccessException)
             {
-                return Unauthorized();
+                return Unauthorized("You have entered an invalid username or password");
             }
         }
 
@@ -108,7 +124,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<IActionResult> ForgotPassword([FromBody] UserEmailDto userEmailDto)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
         {
             if (!ModelState.IsValid)
             {
@@ -123,13 +139,13 @@ namespace Webshop.API.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
                 }
 
-                await _userService.ForgotPasswordAsync(HttpContext, userEmailDto, resetLink);
+                await _userService.ForgotPasswordAsync(HttpContext, forgotPasswordDto, resetLink);
                 return Ok("If this email exists in our system, you will receive a password reset email.");
             }
 
-            catch (InvalidOperationException ex)
+            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
-                return StatusCode(StatusCodes.Status429TooManyRequests, ex.Message);
+                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many login attempts. Please try again later.");
             }
         }
 
@@ -137,6 +153,7 @@ namespace Webshop.API.Controllers
         [HttpPost("reset-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             if (!ModelState.IsValid)
@@ -149,6 +166,18 @@ namespace Webshop.API.Controllers
                 await _userService.ResetPasswordAsync(HttpContext, resetPasswordDto);
                 return Ok("Password has been reset successfully.");
             }
+
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid or expired token.");
+            }
+
+            catch (ArgumentException ex) when (ex.ParamName == nameof(resetPasswordDto.NewPassword))
+            {
+                return BadRequest("Password does not meet the required criteria.");
+            }
+
+
 
             catch (InvalidOperationException ex)
             {

@@ -2,7 +2,7 @@
 
 namespace Webshop.Shared.DTOs
 {
-    public class UserEmailDto
+    public class ForgotPasswordDto
     {
         [Required, EmailAddress]
         public required string Email { get; set; }
