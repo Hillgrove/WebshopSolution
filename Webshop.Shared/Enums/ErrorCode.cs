@@ -4,6 +4,7 @@
     {
         RateLimited,
         WrongCredentials,
-        NotFound
+        NotFound,
+        WeakPassword
     }
 }

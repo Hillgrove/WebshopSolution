@@ -137,7 +137,8 @@ namespace Webshop.API.Controllers
                 return StatusCode(StatusCodes.Status429TooManyRequests, result.Message);
             }
 
-            if (!result.Success && result.Error == ErrorCode.WrongCredentials)
+            // Returns ok to not give user knowledge if the email exists
+            if (!result.Success && result.Error == ErrorCode.NotFound)
             {
                 return Ok(result.Message);
             }
@@ -157,40 +158,40 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _userService.ResetPasswordAsync(HttpContext, resetPasswordDto);
+
+            if (!result.Success && result.Error == ErrorCode.NotFound)
             {
-                await _userService.ResetPasswordAsync(HttpContext, resetPasswordDto);
-                return Ok("Password has been reset successfully.");
+                return Unauthorized(result.Message);
             }
 
-            catch (UnauthorizedAccessException)
+            if (!result.Success && result.Error == ErrorCode.WeakPassword)
             {
-                return Unauthorized("Invalid or expired token.");
+                return BadRequest(result.Message);
             }
 
-            catch (ArgumentException ex) when (ex.ParamName == nameof(resetPasswordDto.NewPassword))
-            {
-                return BadRequest("Password does not meet the required criteria.");
-            }
-
-
-
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok("Password has been reset successfully.");
         }
 
-        //// TODO: implement ChangePassword endpoint
-        //// POST api/<UsersController>/change-password
-        //[HttpPost("change-password")]
-        //[ProducesResponseType(StatusCodes.Status200OK)]
-        //public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
+        // TODO: implement ChangePassword endpoint
+        // POST api/<UsersController>/change-password
+        [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _userService.ChangePasswordAsync(changePasswordDto);
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
     }
 }

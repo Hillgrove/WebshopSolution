@@ -76,22 +76,20 @@ namespace Webshop.Services
             return new RegistrationResultDto { Success = true, Message = "User created.", User = addedUser };
         }
 
-        public async Task ResetPasswordAsync(HttpContext httpContext, ResetPasswordDto resetPasswordDto)
+        public async Task<ResultDto> ResetPasswordAsync(HttpContext httpContext, ResetPasswordDto resetPasswordDto)
         {
-            string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, resetPasswordDto.VisitorId);
-
             var hashedToken = _hashingService.ComputeSha256Hash(resetPasswordDto.Token);
             var user = await _userRepository.GetUserByPasswordResetTokenAsync(hashedToken);
 
             if (user == null || user.PasswordResetTokenExpiration < DateTime.UtcNow)
             {
-                throw new UnauthorizedAccessException();
+                return new ResultDto { Success = false, Error = ErrorCode.NotFound, Message = "Invalid or expired token." };
             }
 
             if (!_passwordService.IsPasswordValidLength(resetPasswordDto.NewPassword) ||
                 !_passwordService.IsPasswordStrong(resetPasswordDto.NewPassword))
             {
-                throw new ArgumentException(nameof(resetPasswordDto.NewPassword));
+                return new ResultDto { Success = false, Error = ErrorCode.WeakPassword, Message = "Password does not meet the required criteria." };
             }
 
             user.PasswordHash = _hashingService.GenerateHash(resetPasswordDto.NewPassword);
@@ -99,47 +97,50 @@ namespace Webshop.Services
             user.PasswordResetTokenExpiration = null;
             await _userRepository.UpdateAsync(user);
 
+            string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, resetPasswordDto.VisitorId);
             _rateLimitingService.ResetAttempts(rateLimitKey, _passwordResetkey);
 
             if (user.Email != null)
             {
                 await _emailService.SendPasswordChangedNotification(user.Email);
             }
+
+            return new ResultDto { Success = true, Message = "Password has been reset successfully." };
         }
 
-        public async Task<LoginResultDto> LoginAsync(HttpContext httpContext, UserAuthDto userAuthDto)
+        public async Task<ResultDto> LoginAsync(HttpContext httpContext, UserAuthDto userAuthDto)
         {
             string ratelimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, userAuthDto.VisitorId);
 
             if (_rateLimitingService.IsRateLimited(ratelimitKey, _loginkey))
             {
-                return new LoginResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many login attempts. Please try again later." };
+                return new ResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many login attempts. Please try again later." };
             }
 
             bool isValidUser = await VerifyUserCredentialsAsync(userAuthDto.Email, userAuthDto.Password);
             if (!isValidUser)
             {
                 _rateLimitingService.RegisterAttempt(ratelimitKey, _loginkey);
-                return new LoginResultDto { Success = false, Error = ErrorCode.WrongCredentials, Message = "You have entered an invalid username or password" };
+                return new ResultDto { Success = false, Error = ErrorCode.WrongCredentials, Message = "You have entered an invalid username or password" };
             }
 
             _rateLimitingService.ResetAttempts(ratelimitKey, _loginkey);
-            return new LoginResultDto { Success = true, Message = "Login successful" };
+            return new ResultDto { Success = true, Message = "Login successful" };
         }
 
-        public async Task<ForgotPasswordResultDto> ForgotPasswordAsync(HttpContext httpContext, ForgotPasswordDto forgotPasswordDto)
+        public async Task<ResultDto> ForgotPasswordAsync(HttpContext httpContext, ForgotPasswordDto forgotPasswordDto)
         {
             string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, forgotPasswordDto.VisitorId);
             if (_rateLimitingService.IsRateLimited(rateLimitKey, _passwordResetkey))
             {
-                return new ForgotPasswordResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many reset attempts. Please try again later." };
+                return new ResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many reset attempts. Please try again later." };
             }
 
             var user = await _userRepository.GetUserByEmailAsync(forgotPasswordDto.Email);
             if (user == null)
             {
                 // return general message to not let user know if it's a valid email.
-                return new ForgotPasswordResultDto { Success = false, Error = ErrorCode.NotFound, Message = "If this email exists in our system, your will receive a password rest email." };
+                return new ResultDto { Success = false, Error = ErrorCode.NotFound, Message = "If this email exists in our system, your will receive a password rest email." };
             }
 
             var request = httpContext.Request;
@@ -150,7 +151,39 @@ namespace Webshop.Services
             await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
             _rateLimitingService.RegisterAttempt(rateLimitKey, _passwordResetkey);
 
-            return new ForgotPasswordResultDto { Success = true, Message = "If this email exists in our system, you will receive a password reset email." };
+            return new ResultDto { Success = true, Message = "If this email exists in our system, you will receive a password reset email." };
+        }
+
+        public async Task<ResultDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        {
+            // TODO: check if user is logged in?
+            // TODO: refactor all places that validates password
+
+            if (!await VerifyUserCredentialsAsync(changePasswordDto.Email, changePasswordDto.OldPassword))
+            {
+                return new ResultDto { Success = false, Message = "You have entered an invalid username or password" };
+            }
+
+            if (!_passwordService.IsPasswordValidLength(changePasswordDto.NewPassword))
+            {
+                return new ResultDto { Success = false, Message = "Password needs to be between 8 and 64 characters long" };
+            }
+
+            if (!_passwordService.IsPasswordStrong(changePasswordDto.NewPassword))
+            {
+                return new ResultDto { Success = false, Message = "Password is not strong enough" };
+            }
+
+            if (await _passwordService.IsPasswordPwned(changePasswordDto.NewPassword))
+            {
+                return new ResultDto { Success = false, Message = "This password has been found in data breaches. Please choose another." };
+            }
+
+            var user = await _userRepository.GetUserByEmailAsync(changePasswordDto.Email);
+            user!.PasswordHash = _hashingService.GenerateHash(changePasswordDto.NewPassword);
+            await _userRepository.UpdateAsync(user);
+
+            return new ResultDto { Success = true, Message = "Password successfully changed" };
         }
 
         private async Task<bool> VerifyUserCredentialsAsync(string email, string password)
