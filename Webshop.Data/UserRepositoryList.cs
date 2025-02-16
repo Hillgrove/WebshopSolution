@@ -21,11 +21,6 @@ namespace Webshop.Data
 
         public Task<User> AddAsync(User newUser)
         {
-            if (_users.Any(u => u.Email == newUser.Email))
-            {
-                throw new InvalidOperationException("Email already registered.");
-            }
-
             newUser.Id = _nextId++;
             _users.Add(newUser);
             return Task.FromResult(newUser);

@@ -41,15 +41,6 @@ namespace Webshop.Data
             using var connection = new SQLiteConnection(_connectionString);
             await connection.OpenAsync();
 
-            // **Check if user already exists**
-            using var checkCommand = new SQLiteCommand("SELECT COUNT(1) FROM Users Where Email = @Email", connection);
-            checkCommand.Parameters.AddWithValue("@Email", newUser.Email);
-
-            if (Convert.ToInt32(checkCommand.ExecuteScalar()) > 0)
-            {
-                throw new InvalidOperationException("Email already registered.");
-            }
-
             // Insert new user
             var insertCommand = new SQLiteCommand(connection)
             {

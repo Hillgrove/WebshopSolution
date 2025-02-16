@@ -54,29 +54,15 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _userService.RegisterUserAsync(userAuthDto);
+
+            if (!result.Success)
             {
-                var user = await _userService.RegisterUserAsync(userAuthDto);
-                var userDto = new UserDto { Id = user.Id, Email = user.Email };
-                return CreatedAtAction(nameof(Get), new { id = userDto.Id }, userDto);
+                return BadRequest(result.Message);
             }
 
-            catch (ArgumentException ex) when (ex.ParamName == nameof(userAuthDto.Email))
-            {
-                return BadRequest("Invalid email format.");
-            }
-            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordValidLength))
-            {
-                return BadRequest("Password is too short.");
-            }
-            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordStrong))
-            {
-                return BadRequest("Password is not strong enough.");
-            }
-            catch (ArgumentException ex) when (ex.ParamName == nameof(_passwordService.IsPasswordPwned))
-            {
-                return BadRequest("This password has been found in data breaches. Please choose another.");
-            }
+            var userDto = new UserDto { Id = result.User!.Id, Email = result.User.Email };
+            return CreatedAtAction(nameof(Get), new { id = userDto.Id }, userDto);
         }
 
         // POST api/<UsersController>/login
@@ -114,7 +100,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Logout()
         {
-            // TODO: Complete method
+            // TODO: implement Logout endpoint
             return Ok(new { message = "Logged out" });
         }
 
@@ -183,6 +169,15 @@ namespace Webshop.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        // TODO: implement ChangePassword endpoint
+        // POST api/<UsersController>/change-password
+        [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -35,28 +35,33 @@ namespace Webshop.Services
             _rateLimitingService = rateLimitingService;
         }
 
-        public async Task<User> RegisterUserAsync(UserAuthDto userAuthDto)
+        public async Task<RegistrationResultDto> RegisterUserAsync(UserAuthDto userAuthDto)
         {
             userAuthDto.Email = userAuthDto.Email.Trim().ToLower();
 
+            if (await _userRepository.GetUserByEmailAsync(userAuthDto.Email) == null)
+            {
+                return new RegistrationResultDto { Success = false, Message = "Email is already registered" };
+            }
+
             if (!_validationService.IsEmailValid(userAuthDto.Email))
             {
-                throw new ArgumentException(nameof(userAuthDto.Email));
+                return new RegistrationResultDto { Success = false, Message = "Invalid email format." };
             }
 
             if (!_passwordService.IsPasswordValidLength(userAuthDto.Password))
             {
-                throw new ArgumentException(nameof(_passwordService.IsPasswordValidLength));
+                return new RegistrationResultDto { Success = false, Message = "Password needs to be between 8 and 64 characters long" };
             }
 
             if (!_passwordService.IsPasswordStrong(userAuthDto.Password))
             {
-                throw new ArgumentException(nameof(_passwordService.IsPasswordStrong));
+                return new RegistrationResultDto { Success = false, Message = "Password is not strong enough" };
             }
 
             if (await _passwordService.IsPasswordPwned(userAuthDto.Password))
             {
-                throw new ArgumentException(nameof(_passwordService.IsPasswordPwned));
+                return new RegistrationResultDto { Success = false, Message = "This password has been found in data breaches. Please choose another." };
             }
 
             var passwordHash = _hashingService.GenerateHash(userAuthDto.Password);
@@ -67,7 +72,7 @@ namespace Webshop.Services
             };
 
             var addedUser = await _userRepository.AddAsync(createdUser);
-            return addedUser;
+            return new RegistrationResultDto { Success = true, Message = "User created.", User = addedUser };
         }
 
         public async Task ResetPasswordAsync(HttpContext httpContext, ResetPasswordDto resetPasswordDto)

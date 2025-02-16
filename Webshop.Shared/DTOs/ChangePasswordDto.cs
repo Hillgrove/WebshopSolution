@@ -2,10 +2,16 @@
 
 namespace Webshop.Shared.DTOs
 {
-    public class ForgotPasswordDto
+    public class ChangePasswordDto
     {
         [Required, EmailAddress]
         public required string Email { get; set; }
+
+        [Required, MinLength(8), MaxLength(64)]
+        public required string OldPassword { get; set; }
+
+        [Required, MinLength(8), MaxLength(64)]
+        public required string NewPassword { get; set; }
 
         // FingerPrintJS string
         public required string VisitorId { get; set; }
