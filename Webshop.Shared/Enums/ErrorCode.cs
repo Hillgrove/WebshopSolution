@@ -1,8 +1,9 @@
 ﻿namespace Webshop.Shared.Enums
 {
-    public enum LoginErrorCode
+    public enum ErrorCode
     {
         RateLimited,
-        WrongCredentials
+        WrongCredentials,
+        NotFound
     }
 }

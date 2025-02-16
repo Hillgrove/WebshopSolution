@@ -96,12 +96,12 @@ namespace Webshop.API.Controllers
 
             var result = await _userService.LoginAsync(HttpContext, userAuthDto);
 
-            if (!result.Success && result.Error == LoginErrorCode.RateLimited)
+            if (!result.Success && result.Error == ErrorCode.RateLimited)
             {
                 return StatusCode(StatusCodes.Status429TooManyRequests, result.Message);
             }
 
-            if (!result.Success && result.Error == LoginErrorCode.WrongCredentials)
+            if (!result.Success && result.Error == ErrorCode.WrongCredentials)
             {
                 return Unauthorized(result.Message);
             }
@@ -130,22 +130,19 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                string? resetLink = "https://127.0.0.1:5500/#/reset-password";
-                if (resetLink == null)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your request.");
-                }
+            var result = await _userService.ForgotPasswordAsync(HttpContext, forgotPasswordDto);
 
-                await _userService.ForgotPasswordAsync(HttpContext, forgotPasswordDto, resetLink);
-                return Ok("If this email exists in our system, you will receive a password reset email.");
+            if (!result.Success && result.Error == ErrorCode.RateLimited)
+            {
+                return StatusCode(StatusCodes.Status429TooManyRequests, result.Message);
             }
 
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            if (!result.Success && result.Error == ErrorCode.WrongCredentials)
             {
-                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many login attempts. Please try again later.");
+                return Ok(result.Message);
             }
+
+            return Ok(result.Message);
         }
 
         // POST api/<UsersController>/reset-password
@@ -184,18 +181,16 @@ namespace Webshop.API.Controllers
             }
         }
 
-        // TODO: implement ChangePassword endpoint
-        // POST api/<UsersController>/change-password
-        [HttpPost("change-password")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-
-        }
+        //// TODO: implement ChangePassword endpoint
+        //// POST api/<UsersController>/change-password
+        //[HttpPost("change-password")]
+        //[ProducesResponseType(StatusCodes.Status200OK)]
+        //public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //}
     }
 }

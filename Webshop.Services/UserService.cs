@@ -113,35 +113,44 @@ namespace Webshop.Services
 
             if (_rateLimitingService.IsRateLimited(ratelimitKey, _loginkey))
             {
-                return new LoginResultDto { Success = false, Error = LoginErrorCode.RateLimited, Message = "Too many login attempts. Please try again later." };
+                return new LoginResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many login attempts. Please try again later." };
             }
 
             bool isValidUser = await VerifyUserCredentialsAsync(userAuthDto.Email, userAuthDto.Password);
             if (!isValidUser)
             {
                 _rateLimitingService.RegisterAttempt(ratelimitKey, _loginkey);
-                return new LoginResultDto { Success = false, Error = LoginErrorCode.WrongCredentials, Message = "You have entered an invalid username or password" };
+                return new LoginResultDto { Success = false, Error = ErrorCode.WrongCredentials, Message = "You have entered an invalid username or password" };
             }
 
             _rateLimitingService.ResetAttempts(ratelimitKey, _loginkey);
             return new LoginResultDto { Success = true, Message = "Login successful" };
         }
 
-        public async Task ForgotPasswordAsync(HttpContext httpContext, ForgotPasswordDto forgotPasswordDto, string resetLink)
+        public async Task<ForgotPasswordResultDto> ForgotPasswordAsync(HttpContext httpContext, ForgotPasswordDto forgotPasswordDto)
         {
             string rateLimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, forgotPasswordDto.VisitorId);
             if (_rateLimitingService.IsRateLimited(rateLimitKey, _passwordResetkey))
             {
-                throw new HttpRequestException(null, null, System.Net.HttpStatusCode.TooManyRequests);
+                return new ForgotPasswordResultDto { Success = false, Error = ErrorCode.RateLimited, Message = "Too many reset attempts. Please try again later." };
             }
 
             var user = await _userRepository.GetUserByEmailAsync(forgotPasswordDto.Email);
-            if (user != null && !string.IsNullOrEmpty(user.Email))
+            if (user == null)
             {
-                var token = await GenerateAndSavePasswordResetTokenAsync(user);
-                await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
-                _rateLimitingService.RegisterAttempt(rateLimitKey, _passwordResetkey);
+                // return general message to not let user know if it's a valid email.
+                return new ForgotPasswordResultDto { Success = false, Error = ErrorCode.NotFound, Message = "If this email exists in our system, your will receive a password rest email." };
             }
+
+            var request = httpContext.Request;
+            var resetLink = $"{request.Scheme}://{request.Host}/#/reset-password";
+            //string? resetLink = "https://127.0.0.1:5500/#/reset-password";
+
+            var token = await GenerateAndSavePasswordResetTokenAsync(user);
+            await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
+            _rateLimitingService.RegisterAttempt(rateLimitKey, _passwordResetkey);
+
+            return new ForgotPasswordResultDto { Success = true, Message = "If this email exists in our system, you will receive a password reset email." };
         }
 
         private async Task<bool> VerifyUserCredentialsAsync(string email, string password)
