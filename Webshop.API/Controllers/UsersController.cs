@@ -3,6 +3,7 @@ using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Services;
 using Webshop.Shared.DTOs;
+using Webshop.Shared.Enums;
 
 namespace Webshop.API.Controllers
 {
@@ -93,21 +94,19 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _userService.LoginAsync(HttpContext, userAuthDto);
+
+            if (!result.Success && result.Error == LoginErrorCode.RateLimited)
             {
-                await _userService.LoginAsync(HttpContext, userAuthDto);
-                return Ok();
-            }
-            
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            {
-                return StatusCode(StatusCodes.Status429TooManyRequests, "Too many login attempts. Please try again later.");
+                return StatusCode(StatusCodes.Status429TooManyRequests, result.Message);
             }
 
-            catch (UnauthorizedAccessException)
+            if (!result.Success && result.Error == LoginErrorCode.WrongCredentials)
             {
-                return Unauthorized("You have entered an invalid username or password");
+                return Unauthorized(result.Message);
             }
+            
+            return Ok(result.Message);
         }
 
         // POST api/<UsersController>/logout
@@ -118,7 +117,6 @@ namespace Webshop.API.Controllers
             // TODO: implement Logout endpoint
             return Ok(new { message = "Logged out" });
         }
-
 
         // POST api/<UsersController>/forgot-password
         [HttpPost("forgot-password")]
@@ -192,7 +190,12 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+
         }
     }
 }

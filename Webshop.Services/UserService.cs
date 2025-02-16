@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Shared.DTOs;
+using Webshop.Shared.Enums;
 
 namespace Webshop.Services
 {
@@ -106,23 +107,24 @@ namespace Webshop.Services
             }
         }
 
-        public async Task LoginAsync(HttpContext httpContext, UserAuthDto userAuthDto)
+        public async Task<LoginResultDto> LoginAsync(HttpContext httpContext, UserAuthDto userAuthDto)
         {
             string ratelimitKey = RateLimitingService.GenerateRateLimitKey(httpContext, userAuthDto.VisitorId);
 
             if (_rateLimitingService.IsRateLimited(ratelimitKey, _loginkey))
             {
-                throw new HttpRequestException(null, null, System.Net.HttpStatusCode.TooManyRequests);
+                return new LoginResultDto { Success = false, Error = LoginErrorCode.RateLimited, Message = "Too many login attempts. Please try again later." };
             }
 
             bool isValidUser = await VerifyUserCredentialsAsync(userAuthDto.Email, userAuthDto.Password);
             if (!isValidUser)
             {
                 _rateLimitingService.RegisterAttempt(ratelimitKey, _loginkey);
-                throw new UnauthorizedAccessException();
+                return new LoginResultDto { Success = false, Error = LoginErrorCode.WrongCredentials, Message = "You have entered an invalid username or password" };
             }
 
             _rateLimitingService.ResetAttempts(ratelimitKey, _loginkey);
+            return new LoginResultDto { Success = true, Message = "Login successful" };
         }
 
         public async Task ForgotPasswordAsync(HttpContext httpContext, ForgotPasswordDto forgotPasswordDto, string resetLink)
