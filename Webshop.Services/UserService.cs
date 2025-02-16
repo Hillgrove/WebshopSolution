@@ -39,7 +39,7 @@ namespace Webshop.Services
         {
             userAuthDto.Email = userAuthDto.Email.Trim().ToLower();
 
-            if (await _userRepository.GetUserByEmailAsync(userAuthDto.Email) == null)
+            if (await _userRepository.GetUserByEmailAsync(userAuthDto.Email) != null)
             {
                 return new RegistrationResultDto { Success = false, Message = "Email is already registered" };
             }

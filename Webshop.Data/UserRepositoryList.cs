@@ -14,6 +14,11 @@ namespace Webshop.Data
             return Task.FromResult<IEnumerable<User>>(new List<User>(_users));
         }
 
+        public Task<User?> GetByIdAsync(int id)
+        {
+            return Task.FromResult(_users.FirstOrDefault(u => u.Id == id));
+        }
+
         public Task<User?> GetUserByEmailAsync(string email)
         {
             return Task.FromResult(_users.FirstOrDefault(u => u.Email == email));

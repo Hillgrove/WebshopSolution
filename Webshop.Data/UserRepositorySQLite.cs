@@ -86,6 +86,31 @@ namespace Webshop.Data
             return users;
         }
 
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SQLiteCommand("SELECT * FROM Users WHERE Id = @Id", connection);
+            command.Parameters.AddWithValue("@Id", id);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new User
+                {
+                    Id = reader.GetInt32(0),
+                    Email = reader.GetString(1),
+                    PasswordHash = reader.GetString(2),
+                    CreatedAt = reader.GetDateTime(3),
+                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
+                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                };
+            }
+
+            return null;
+        }
+
         public async Task<User?> GetUserByEmailAsync(string email)
         {
             using var connection = new SQLiteConnection(_connectionString);

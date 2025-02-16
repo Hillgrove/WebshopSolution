@@ -43,6 +43,21 @@ namespace Webshop.API.Controllers
             return Ok(users);
         }
 
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDto>> Get(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            UserDto userDto = new UserDto { Id = user.Id, Email = user.Email };
+            return Ok(userDto);
+        }
+
         // POST api/<UsersController>/register
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -98,7 +113,7 @@ namespace Webshop.API.Controllers
         // POST api/<UsersController>/logout
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Logout()
+        public ActionResult Logout()
         {
             // TODO: implement Logout endpoint
             return Ok(new { message = "Logged out" });
@@ -110,7 +125,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
+        public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPasswordDto)
         {
             if (!ModelState.IsValid)
             {
@@ -140,7 +155,7 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
             if (!ModelState.IsValid)
             {
@@ -175,7 +190,7 @@ namespace Webshop.API.Controllers
         // POST api/<UsersController>/change-password
         [HttpPost("change-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             throw new NotImplementedException();
         }
