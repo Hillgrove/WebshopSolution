@@ -7,7 +7,6 @@ import { AboutPage } from "./pages/about.js";
 import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { ChangePasswordPage } from "./pages/changePassword.js";
-import { ChangePasswordPage } from "./pages/changePassword.js";
 
 
 
@@ -19,9 +18,8 @@ const routes = [
     { path: "/about", component: AboutPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
     { path: "/reset-password", component: ResetPasswordPage },
-    { path: "/change-password", component: ChangePasswordPage }
-    { path: "/reset-password", component: ResetPasswordPage },
-    { path: "/change-password", component: ChangePasswordPage }
+    { path: "/change-password", component: ChangePasswordPage },
+    { path: "/reset-password", component: ResetPasswordPage }
 ];
 
 // Axios baseurl
