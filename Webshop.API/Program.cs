@@ -13,13 +13,23 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
+builder.Services.AddSingleton<RateLimitingService>();
+//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
+
+// HSTS
+builder.Services.AddHsts(options =>
+{
+    // TODO: Change MaxAge to 2 years after done testing
+    options.MaxAge = TimeSpan.FromMinutes(5);
+    options.IncludeSubDomains = true;
+    options.Preload = true;
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -40,6 +50,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+else
+{
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
