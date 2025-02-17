@@ -36,6 +36,14 @@ Denne password policy fastsætter krav til oprettelse, anvendelse og opbevaring 
 
 [Link](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls)
 
+## Ratelimiting
+
+# Loginforsøg
+- Loginforsøg er begrænset til max 3 forsøg pr. 10 minut.
+
+# Nulstilling af password
+- Nulstilling af passwords er begrænset til 3 forsøg pr. time.
+
 ## Opbevaring og Beskyttelse
 - Koder hashes og saltes med moderne algoritme.
 - Ingen lagring af adgangskoder i klartekst.
