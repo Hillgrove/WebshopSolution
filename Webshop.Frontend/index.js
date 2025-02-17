@@ -6,6 +6,7 @@ import { RegisterPage } from "./pages/register.js";
 import { AboutPage } from "./pages/about.js";
 import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
+import { ChangePasswordPage } from "./pages/changePassword.js";
 
 
 // Define Routes
@@ -15,7 +16,8 @@ const routes = [
     { path: "/register", component: RegisterPage },
     { path: "/about", component: AboutPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
-    { path: "/reset-password", component: ResetPasswordPage }
+    { path: "/reset-password", component: ResetPasswordPage },
+    { path: "/change-password", component: ChangePasswordPage }
 ];
 
 // Axios baseurl
