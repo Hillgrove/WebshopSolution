@@ -9,7 +9,7 @@ export const ChangePasswordPage = {
 
                         <!-- Card Header -->
                         <div class="card-header text-center">
-                            <h1>Change password</h1>
+                            <h1>Change Password</h1>
                         </div>
 
                         <!-- Card Body -->
