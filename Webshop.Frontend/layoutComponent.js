@@ -20,6 +20,9 @@ export const LayoutComponent = {
                             <li class="nav-item">
                                 <router-link class="nav-link" to="/login">Login</router-link>
                             </li>
+                            <li class="nav-item">
+                                <router-link class="nav-link" to="/change-password">Change password</router-link>
+                            </li>
                         </ul>
                     </div>
 
