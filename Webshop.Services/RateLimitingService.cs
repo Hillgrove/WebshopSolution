@@ -8,9 +8,13 @@ namespace Webshop.Services
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, (int Attempts, DateTime LastAttempt)>> _attempts = new();
         private readonly Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)> _rateLimitConfigs;
 
-        public RateLimitingService(Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)> rateLimitConfigs)
+        public RateLimitingService()
         {
-            _rateLimitConfigs = rateLimitConfigs;
+            _rateLimitConfigs = new Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)>
+            {
+                { "Login", (3, TimeSpan.FromMinutes(10)) },
+                { "PasswordReset", (3, TimeSpan.FromMinutes(60)) }
+            };
         }
 
         public static string GenerateRateLimitKey(HttpContext httpContext, string? deviceFingerprint)
