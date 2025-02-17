@@ -12,8 +12,5 @@ namespace Webshop.Shared.DTOs
 
         [Required, MinLength(8), MaxLength(64)]
         public required string NewPassword { get; set; }
-
-        // FingerPrintJS string
-        public required string VisitorId { get; set; }
     }
 }
