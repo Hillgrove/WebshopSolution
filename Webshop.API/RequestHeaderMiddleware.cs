@@ -1,11 +1,11 @@
 ﻿namespace Webshop.API
 {
-    public class ContentTypeMiddleware
+    public class RequestHeaderMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly string[] _allowedContentTypes = { "application/json", "application/xml" };
 
-        public ContentTypeMiddleware(RequestDelegate next)
+        public RequestHeaderMiddleware(RequestDelegate next)
         {
             _next = next;
         }

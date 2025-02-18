@@ -23,7 +23,7 @@ builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 
-// HSTS
+// HSTS (ASVS 14.4.5)
 builder.Services.AddHsts(options =>
 {
     // TODO: Change MaxAge to 2 years after done testing
@@ -63,10 +63,13 @@ app.UseHttpsRedirection();
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
-// Content-Type validation middleware (ASVS 13.1.5)
-app.UseMiddleware<ContentTypeMiddleware>();
+// Content-Type validation of request headers (ASVS 13.1.5)
+app.UseMiddleware<RequestHeaderMiddleware>();
 
-// Custom middleware - Allowed HTTP Methods
+// Ensure Content-Type response header is set properly (ASVS 14.4.1, 14.4.4, 14.4.3)
+app.UseMiddleware<ResponseHeaderMiddleware>();
+
+// Custom middleware - Allowed HTTP Methods (ASVS 14.5.1)
 app.Use(async (context, next) =>
 {
     var allowedMethods = new HashSet<string> { "GET", "POST", "OPTIONS" };
