@@ -37,8 +37,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowSpecificOrigin",
                       policy =>
                       {
-                          policy.WithOrigins("https://127.0.0.1:5500")
-                                .AllowAnyMethod()
+                          policy.WithOrigins("https://127.0.0.1:5500", "https://webshop.hillgrove.dk")
+                                .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader();
                       });
 });
@@ -58,6 +58,20 @@ else
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
+
+// Custom middleware - Allowed HTTP Methods
+app.Use(async (context, next) =>
+{
+    var allowedMethods = new HashSet<string> { "GET", "POST", "OPTIONS" };
+    if (!allowedMethods.Contains(context.Request.Method))
+    {
+        context.Response.StatusCode = 405;
+        await context.Response.WriteAsync("Method Not Allowed");
+        return;
+    }
+    await next();
+});
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
