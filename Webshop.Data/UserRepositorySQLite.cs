@@ -52,7 +52,7 @@ namespace Webshop.Data
 
             insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
             insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
-            insertCommand.Parameters.AddWithValue("CreatedAt", newUser.CreatedAt);
+            insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
 
             newUser.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
             return newUser;
