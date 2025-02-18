@@ -23,7 +23,8 @@ const routes = [
 ];
 
 // Axios baseurl
-axios.defaults.baseURL = "https://localhost:7016/api";
+// axios.defaults.baseURL = "https://localhost:7016/api";
+axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
 
 // Check if visitorId exists in local storage
 let visitorId = localStorage.getItem('visitorId');
