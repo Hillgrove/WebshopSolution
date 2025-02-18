@@ -21,7 +21,7 @@ builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-builder.Services.AddSingleton<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
+builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 
 // HSTS (ASVS 14.4.5)
 builder.Services.AddHsts(options =>
@@ -32,7 +32,7 @@ builder.Services.AddHsts(options =>
     options.Preload = true;
 });
 
-// CORS
+// CORS (ASVS 14.5.3)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "AllowSpecificOrigin",
