@@ -72,10 +72,10 @@ export const LoginPage = {
 
     methods: {
         async loginUser() {
-            try {
-                // Retrieve visitorId from local storage
-                const visitorId = localStorage.getItem('visitorId');
+            // Retrieve visitorId from local storage
+            const visitorId = localStorage.getItem('visitorId');
 
+            try {
                 // Send login request
                 this.loginData.email = this.loginData.email.trim().toLowerCase()
 

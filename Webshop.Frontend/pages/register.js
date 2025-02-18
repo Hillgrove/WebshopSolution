@@ -96,9 +96,18 @@ export const RegisterPage = {
         async registerUser() {
             this.registerData.email = this.registerData.email.trim().toLowerCase()
 
+            // Retrieve visitorId from local storage
+            const visitorId = localStorage.getItem('visitorId');
+
             try {
-                const response = await axios.post("/Users/register", this.registerData)
+                // Send register request
+                const response = await axios.post("/Users/register", {
+                    ...this.registerData,
+                    visitorId
+                })
+
                 this.message = "User registered successfully!"
+
             } catch (error) {
                 this.registerData.password = ""
                 this.registerData.repeatPassword = ""

@@ -57,7 +57,6 @@ else
     app.UseHsts();
 }
 
-
 app.UseHttpsRedirection();
 
 // Apply CORS policy

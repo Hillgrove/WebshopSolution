@@ -59,12 +59,12 @@ export const ResetPasswordPage = {
             // Retrieve visitorId from local storage
             const visitorId = localStorage.getItem('visitorId');
 
-            try {
-                const payload = {
-                    newPassword: this.resetData.password,
-                    token: this.token
-                };
+            const payload = {
+                newPassword: this.resetData.password,
+                token: this.token
+            };
 
+            try {
                 const response = await axios.post("/Users/reset-password", {
                     ...payload,
                     visitorId
