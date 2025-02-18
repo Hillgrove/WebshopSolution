@@ -143,8 +143,13 @@ namespace Webshop.Services
                 return new ResultDto { Success = false, Error = ErrorCode.NotFound, Message = "If this email exists in our system, your will receive a password rest email." };
             }
 
-            var request = httpContext.Request;
-            var resetLink = $"{request.Scheme}://{request.Host}/#/reset-password";
+            var referer =  httpContext.Request.Headers["Referer"].ToString();
+            if (string.IsNullOrEmpty(referer))
+            {
+                return new ResultDto { Success = false, Error = ErrorCode.NotFound, Message = "Referer header is missing." };
+            }
+
+            var resetLink = $"{referer}/#/reset-password";
             //string? resetLink = "https://127.0.0.1:5500/#/reset-password";
 
             var token = await GenerateAndSavePasswordResetTokenAsync(user);
