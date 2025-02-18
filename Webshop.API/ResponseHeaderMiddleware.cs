@@ -10,7 +10,28 @@
         }
 
         public async Task InvokeAsync(HttpContext context)
-        {         
+        {
+            var headers = context.Response.Headers;
+
+            // Add X-Content-Type-Options header
+            if (!context.Response.Headers.ContainsKey("X-Content-Type-Options"))
+            {
+                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+            }
+
+            // Add Content-Security-Policy header
+            if (!context.Response.Headers.ContainsKey("Content-Security-Policy"))
+            {
+                context.Response.Headers.Append("Content-Security-Policy",
+                                                "default-src 'self'; " +
+                                                "script-src 'self'; " +
+                                                "object-src 'none';" +
+                                                "frame-ancestors 'none';" +
+                                                "upgrade-insecure-requests;" +
+                                                "base-uri 'self';"
+                                                );
+            }
+
             await _next(context);
 
             if (!context.Response.Headers.ContainsKey("Content-Type"))
@@ -30,26 +51,6 @@
                     context.Response.Headers["Content-Type"] = contentType + "; charset=utf-8";
                 }
             }
-
-            // Add X-Content-Type-Options header
-            if (!context.Response.Headers.ContainsKey("X-Content-Type-Options"))
-            {
-                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-            }
-
-            // Add Content-Security-Policy header
-            if (!context.Response.Headers.ContainsKey("Content-Security-Policy"))
-            {
-                context.Response.Headers.Append("Content-Security-Policy",
-                                                "default-src 'self'; " +
-                                                "script-src 'self'; " +
-                                                "object-src 'none';" +
-                                                "frame-ancestors 'none';" +
-                                                "upgrade-insecure-requests;" + 
-                                                "base-uri 'self';"
-                                                );
-            }
         }
     }
-
 }
