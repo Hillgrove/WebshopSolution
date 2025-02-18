@@ -1,3 +1,4 @@
+using Webshop.API;
 using Webshop.Data;
 using Webshop.Services;
 
@@ -56,8 +57,14 @@ else
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
+
+// Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
+
+// Content-Type validation middleware (ASVS 13.1.5)
+app.UseMiddleware<ContentTypeMiddleware>();
 
 // Custom middleware - Allowed HTTP Methods
 app.Use(async (context, next) =>
