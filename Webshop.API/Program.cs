@@ -26,8 +26,7 @@ builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite
 // HSTS (ASVS 14.4.5)
 builder.Services.AddHsts(options =>
 {
-    // TODO: Change MaxAge to 2 years after done testing
-    options.MaxAge = TimeSpan.FromMinutes(5);
+    options.MaxAge = TimeSpan.FromDays(2*365);
     options.IncludeSubDomains = true;
     options.Preload = true;
 });

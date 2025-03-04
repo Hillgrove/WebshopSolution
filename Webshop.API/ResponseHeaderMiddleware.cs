@@ -14,15 +14,15 @@
             var headers = context.Response.Headers;
 
             // Add X-Content-Type-Options header
-            if (!context.Response.Headers.ContainsKey("X-Content-Type-Options"))
+            if (!headers.ContainsKey("X-Content-Type-Options"))
             {
-                context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                headers.Append("X-Content-Type-Options", "nosniff");
             }
 
             // Add Content-Security-Policy header
-            if (!context.Response.Headers.ContainsKey("Content-Security-Policy"))
+            if (!headers.ContainsKey("Content-Security-Policy"))
             {
-                context.Response.Headers.Append("Content-Security-Policy",
+                headers.Append("Content-Security-Policy",
                                                 "default-src 'self'; " +
                                                 "script-src 'self'; " +
                                                 "object-src 'none';" +
@@ -34,9 +34,9 @@
 
             await _next(context);
 
-            if (!context.Response.Headers.ContainsKey("Content-Type"))
+            if (!headers.ContainsKey("Content-Type"))
             {
-                context.Response.Headers.Append("Content-Type", "application/json; charset=utf-8");
+                headers.Append("Content-Type", "application/json; charset=utf-8");
             }
 
             // For text/*, */+xml, and application/xml, ensure the charset is UTF-8
@@ -48,7 +48,7 @@
             {
                 if (!contentType.Contains("charset="))
                 {
-                    context.Response.Headers["Content-Type"] = contentType + "; charset=utf-8";
+                    headers.ContentType = contentType + "; charset=utf-8";
                 }
             }
         }
