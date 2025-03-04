@@ -12,7 +12,7 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            var contentType = context.Request.Headers["Content-Type"].ToString().ToLower();
+            var contentType = context.Request.Headers.ContentType.ToString().ToLower();
 
             if (string.IsNullOrEmpty(contentType) || !_allowedContentTypes.Contains(contentType))
             {
