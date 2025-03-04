@@ -1,4 +1,7 @@
-// Import all page components
+// ============================
+// Section: Import Statements
+// ============================
+
 import { LayoutComponent } from "./layoutComponent.js";
 import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
@@ -9,8 +12,10 @@ import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { ChangePasswordPage } from "./pages/changePassword.js";
 
 
+// ============================
+// Section: Route Definitions
+// ============================
 
-// Define Routes
 const routes = [
     { path: "/", component: HomePage },
     { path: "/login", component: LoginPage },
@@ -22,9 +27,21 @@ const routes = [
     { path: "/reset-password", component: ResetPasswordPage }
 ];
 
-// Axios baseurl
+
+// ============================
+// Section: Axios Configuration
+// ============================
+
 // axios.defaults.baseURL = "https://localhost:7016/api";
 axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+
+// enable sending cookies with requests
+axios.defaults.withCredentials = true;
+
+
+// ============================
+// Section: Visitor ID Initialization
+// ============================
 
 // Check if visitorId exists in local storage
 let visitorId = localStorage.getItem('visitorId');
@@ -42,11 +59,21 @@ if (!visitorId) {
     console.log("Using existing Visitor ID:", visitorId);
 }
 
+
+// ============================
+// Section: Vue Router Initialization
+// ============================
+
 // Initialize Vue Router
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
     routes
 });
+
+
+// ============================
+// Section: Vue App Initialization
+// ============================
 
 // Initialize Vue App
 const app = Vue.createApp({
