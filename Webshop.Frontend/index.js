@@ -32,11 +32,24 @@ const routes = [
 // Section: Axios Configuration
 // ============================
 
-// axios.defaults.baseURL = "https://localhost:7016/api";
-axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+axios.defaults.baseURL = "https://localhost:7016/api";
+// axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
 
-// enable sending cookies with requests
+// Enable sending cookies with requests
 axios.defaults.withCredentials = true;
+
+// Interceptor to attach CSRF toekn from cookies to headers
+axios.interceptors.request.use((config) => {
+    const csrfToken = document.cookie.split('; ')
+                                     .find(row => row.startsWith('XSRF-TOKEN='))
+                                     ?.split('=')[1];
+
+    if (csrfToken) {
+        config.headers['X-XSRF-TOKEN'] = csrfToken;
+    }
+
+    return config;
+});
 
 
 // ============================
@@ -53,10 +66,10 @@ if (!visitorId) {
     }).then(result => {
         visitorId = result.visitorId;
         localStorage.setItem('visitorId', visitorId);
-        console.log("Generated new Visitor ID:", visitorId);
+        //console.log("Generated new Visitor ID:", visitorId);
     });
 } else {
-    console.log("Using existing Visitor ID:", visitorId);
+    //console.log("Using existing Visitor ID:", visitorId);
 }
 
 

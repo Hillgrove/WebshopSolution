@@ -76,9 +76,10 @@ export const LoginPage = {
             const visitorId = localStorage.getItem('visitorId');
 
             try {
-                // Send login request
+                // Normalize email
                 this.loginData.email = this.loginData.email.trim().toLowerCase()
 
+                // Send login request
                 const response = await axios.post("/Users/login", {
                     ...this.loginData,
                     visitorId
@@ -86,6 +87,10 @@ export const LoginPage = {
 
                 if (response.status === 200) {
                     this.message = "Login successful!";
+
+                    // Ensure CSRF token is now stored in cookies
+                    document.cookie = `XSRF-TOKEN=${response.headers['X-CSRF-Token']}; Secure; SameSite=None`;
+
                 }
 
             } catch (error) {
