@@ -1,4 +1,4 @@
-using Webshop.API;
+using Webshop.API.Middleware;
 using Webshop.Data;
 using Webshop.Services;
 
@@ -10,9 +10,10 @@ var connectionString = config["Database:ConnectionString"]
     ?? throw new InvalidOperationException("Database connection string is missing from configuration.");
 
 // Add services to the container.
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
@@ -22,6 +23,20 @@ builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.Name = ".Webshop.Session";
+    // Protects against XSS
+    options.Cookie.HttpOnly = true;
+    // Makes sure cookie is not blocked by GDPR consent
+    options.Cookie.IsEssential = true;
+    // None because frontend and backend are 2 different domains
+    options.Cookie.SameSite = SameSiteMode.None;
+    // Enforce HTTPS in production
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+});
 
 // HSTS (ASVS 14.4.5)
 builder.Services.AddHsts(options =>
@@ -39,7 +54,8 @@ builder.Services.AddCors(options =>
                       {
                           policy.WithOrigins("https://127.0.0.1:5500", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
-                                .AllowAnyHeader();
+                                .AllowAnyHeader()
+                                .AllowCredentials();
                       });
 });
 
@@ -61,6 +77,9 @@ app.UseHttpsRedirection();
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
+// Must be before authentication and controllers
+app.UseSession();
+
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
@@ -79,6 +98,9 @@ app.Use(async (context, next) =>
     }
     await next();
 });
+
+// Apply CSRF protection middleware before authentication
+app.UseMiddleware<CsrfMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();
