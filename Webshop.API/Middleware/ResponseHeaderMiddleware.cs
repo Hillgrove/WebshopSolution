@@ -1,4 +1,4 @@
-﻿namespace Webshop.API
+﻿namespace Webshop.API.Middleware
 {
     public class ResponseHeaderMiddleware
     {
