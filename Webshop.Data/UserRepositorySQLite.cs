@@ -86,6 +86,7 @@ namespace Webshop.Data
             return users;
         }
 
+        // TODO: Refactor code to use ID rather than Email entire application
         public async Task<User?> GetByIdAsync(int id)
         {
             using var connection = new SQLiteConnection(_connectionString);
