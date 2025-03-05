@@ -45,7 +45,7 @@ export const ChangePasswordPage = {
                                 <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordFeedback === 'Very weak' ||
                                     passwordFeedback === 'Weak' ||
                                     passwordFeedback === '' ||
-                                    changeData.password.length < 8"
+                                    changeData.newPassword.length < 8"
                                 >Change Password</button>
 
                             </form>
@@ -69,7 +69,7 @@ export const ChangePasswordPage = {
     `,
     data() {
         return {
-            changeData: { email: "", oldPasword: "", newPassword: "", repeatNewPassword: "" },
+            changeData: { email: "", oldPassword: "", newPassword: "", repeatNewPassword: "" },
             message: "",
             passwordFeedback: "",
         }
@@ -95,7 +95,7 @@ export const ChangePasswordPage = {
                 this.message = "Password changed sucessfully!"
             } catch (error) {
                 this.changeData.oldPassword = ""
-                this.changeData.newpassword = ""
+                this.changeData.newPassword = ""
                 this.changeData.repeatNewPassword = ""
                 this.passwordFeedback = ""
                 this.message = "Registration failed: " + error.response.data

@@ -45,7 +45,6 @@ export const ResetPasswordPage = {
     },
 
     created() {
-        this.token = this.$route.query.token;
         this.token = decodeURIComponent(this.$route.query.token.replace(/ /g, '+'));
     },
 

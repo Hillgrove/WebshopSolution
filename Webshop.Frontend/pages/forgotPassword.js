@@ -72,7 +72,7 @@ export const ForgotPasswordPage = {
                     this.message = "If this email exists in our system, you will receive a password reset email."
                 }
 
-            } catch (error) {""
+            } catch (error) {
                 this.message = "Error: " + error.message;
             }
         }

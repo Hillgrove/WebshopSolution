@@ -94,6 +94,11 @@ export const RegisterPage = {
         },
 
         async registerUser() {
+            if (this.registerData.password !== this.registerData.repeatPassword) {
+                this.message = "Passwords do not match.";
+                return;
+            }
+
             this.registerData.email = this.registerData.email.trim().toLowerCase()
 
             // Retrieve visitorId from local storage

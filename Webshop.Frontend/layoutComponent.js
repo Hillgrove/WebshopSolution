@@ -1,3 +1,5 @@
+import { checkLoginStatus } from "./index.js";
+
 export function createLayoutComponent(globalState) {
     return {
         template: `
@@ -38,7 +40,20 @@ export function createLayoutComponent(globalState) {
             const logoutUser = async () => {
                 try {
                     await axios.post("/Users/logout");
-                    globalState.isLoggedIn = false;
+
+                    // Preserve visitorId but clear session-related data
+                    const visitorId = localStorage.getItem("visitorId");
+
+                    localStorage.clear(); // Clear everything else
+                    if (visitorId) {
+                        localStorage.setItem("visitorId", visitorId); // Restore visitorId
+                    }
+
+                    document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear CSRF token
+                    // await checkLoginStatus(); // Refresh session state
+                    setTimeout(checkLoginStatus, 500);
+
+                    window.location.href = "/#/login"; // Force a redirect to login
                 } catch (error) {
                     console.error("Logout failed", error);
                 }

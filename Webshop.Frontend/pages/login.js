@@ -73,13 +73,20 @@ export const LoginPage = {
 
     methods: {
         async loginUser() {
+            // Normalize email
+            this.loginData.email = this.loginData.email.trim().toLowerCase();
+
             // Retrieve visitorId from local storage
-            const visitorId = localStorage.getItem('visitorId');
+            let visitorId = localStorage.getItem("visitorId");
+            if (!visitorId) {
+                console.log("Visitor ID missing. Waiting for FingerprintJS...");
+                visitorId = await window.fpPromise.then(fp => fp.get()).then(result => {
+                    localStorage.setItem("visitorId", result.visitorId);
+                    return result.visitorId;
+                });
+            }
 
             try {
-                // Normalize email
-                this.loginData.email = this.loginData.email.trim().toLowerCase()
-
                 // Send login request
                 const response = await axios.post("/Users/login", {
                     ...this.loginData,
@@ -87,12 +94,11 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
-                    this.message = "Login successful!";
-
                     // Ensure CSRF token is now stored in cookies
-                    document.cookie = `XSRF-TOKEN=${response.headers['X-CSRF-Token']}; Secure; SameSite=None`;
-
-                    await checkLoginStatus();
+                    document.cookie = `XSRF-TOKEN=${response.headers['XSRF-TOKEN']}; Secure; SameSite=None`;
+                    setTimeout(async () => {
+                        await checkLoginStatus();
+                    }, 500); // Ensure session is properly stored before checking login status
 
                     // Redirect to home page
                     this.$router.push("/");
