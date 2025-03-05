@@ -52,7 +52,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowSpecificOrigin",
                       policy =>
                       {
-                          policy.WithOrigins("https://127.0.0.1:5500", "https://webshop.hillgrove.dk")
+                          policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader()
                                 .AllowCredentials();
