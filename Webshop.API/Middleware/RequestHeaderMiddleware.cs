@@ -14,6 +14,15 @@
         {
             var contentType = context.Request.Headers.ContentType.ToString().ToLower();
 
+            var path = context.Request.Path.ToString().ToLower();
+
+            // Skip Content-Type validation for logout
+            if (path == "/api/users/logout")
+            {
+                await _next(context);
+                return;
+            }
+
             // Skip Content-Type check for GET requests
             if (context.Request.Method == HttpMethods.Get)
             {
