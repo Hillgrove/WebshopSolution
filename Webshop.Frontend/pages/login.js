@@ -1,3 +1,4 @@
+import { checkLoginStatus } from "../index.js";
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -91,6 +92,10 @@ export const LoginPage = {
                     // Ensure CSRF token is now stored in cookies
                     document.cookie = `XSRF-TOKEN=${response.headers['X-CSRF-Token']}; Secure; SameSite=None`;
 
+                    await checkLoginStatus();
+
+                    // Redirect to home page
+                    this.$router.push("/");
                 }
 
             } catch (error) {
