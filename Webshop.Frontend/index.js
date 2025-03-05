@@ -9,7 +9,7 @@ import { AboutPage } from "./pages/about.js";
 import { ChangePasswordPage } from "./pages/changePassword.js";
 import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
-import { createLayoutComponent } from "./layoutComponent.js"; // Import function instead of component
+import { createLayoutComponent } from "./layoutComponent.js";
 
 // ============================
 // Section: Route Definitions
@@ -25,40 +25,12 @@ const routes = [
     { path: "/reset-password", component: ResetPasswordPage }
 ];
 
-
 // ============================
 // Section: Axios Configuration
 // ============================
 
 axios.defaults.baseURL = "https://localhost:7016/api";
-// axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
-
-// Enable sending cookies with requests
-axios.defaults.withCredentials = true;
-
-
-// ============================
-// Section: Global State for Login
-// ============================
-
-export const globalState = Vue.reactive({
-    isLoggedIn: false
-});
-
-// Function to check login status
-export async function checkLoginStatus() {
-    try {
-        const response = await axios.get("/Users/me");
-        globalState.isLoggedIn = response.status === 200;
-    } catch (error) {
-        console.warn("Login status check failed:", error.response?.status, error.response?.data);
-        globalState.isLoggedIn = false;
-    }
-}
-
-// Run login check on startup
-checkLoginStatus();
-
+axios.defaults.withCredentials = true; // Ensure cookies (session + CSRF) are sent
 
 // Interceptor to attach CSRF token from cookies to headers
 axios.interceptors.request.use((config) => {
@@ -74,32 +46,60 @@ axios.interceptors.request.use((config) => {
 });
 
 // ============================
+// Section: Global State for Login
+// ============================
+
+export const globalState = Vue.reactive({
+    isLoggedIn: false
+});
+
+// Function to check login status
+export async function checkLoginStatus() {
+    try {
+        const response = await axios.get("/Users/me");
+        globalState.isLoggedIn = response.status === 200;
+    } catch (error) {
+        if (error.response?.status === 401) {
+            globalState.isLoggedIn = false; // User is not logged in, no need to warn
+            return;
+        }
+        console.warn("Login status check failed:", error.response?.status, error.response?.data);
+        globalState.isLoggedIn = false;
+    }
+}
+
+
+// ============================
+// Section: Initialize FingerprintJS
+// ============================
+
+window.fpPromise = FingerprintJS.load();
+
+
+// ============================
 // Section: Visitor ID Initialization
 // ============================
 
-// Check if visitorId exists in local storage
-let visitorId;
-try {
-    visitorId = localStorage.getItem('visitorId');
-} catch (error) {
-    console.warn("LocalStorage access denied", error);
+export async function initializeVisitorId() {
+    let visitorId = localStorage.getItem("visitorId");
+    if (!visitorId) {
+        console.log("Generating new visitorId...");
+        const result = await window.fpPromise.then(fp => fp.get());
+        visitorId = result.visitorId;
+        localStorage.setItem("visitorId", visitorId);
+    }
 }
 
-if (!visitorId) {
-    // Initialize FingerprintJS and store visitorId in local storage
-    window.fpPromise = window.FingerprintJS.load().then(fp => {
-        return fp.get();
-    }).then(result => {
-        visitorId = result.visitorId;
-        localStorage.setItem('visitorId', visitorId);
-    });
-}
+// Call this at startup after FingerprintJS is initialized
+window.fpPromise.then(() => {
+    initializeVisitorId().then(() => checkLoginStatus());
+});
+
 
 // ============================
 // Section: Vue Router Initialization
 // ============================
 
-// Initialize Vue Router
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
     routes
@@ -109,7 +109,6 @@ const router = VueRouter.createRouter({
 // Section: Vue App Initialization
 // ============================
 
-// Initialize Vue App
 const app = Vue.createApp({
     template: `<layout-component></layout-component>`,
     setup() {
