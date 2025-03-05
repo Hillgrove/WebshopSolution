@@ -148,6 +148,21 @@ namespace Webshop.API.Controllers
             return Ok(new { message = "Logged out" });
         }
 
+        // GET api/<UsersController>/me
+        [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult GetCurrentUser()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            return Ok(new { email = userEmail });
+        }
+
         // POST api/<UsersController>/forgot-password
         [HttpPost("forgot-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
