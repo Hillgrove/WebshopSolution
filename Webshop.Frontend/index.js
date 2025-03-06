@@ -1,7 +1,6 @@
 // ============================
 // Section: Import Statements
 // ============================
-
 import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
 import { RegisterPage } from "./pages/register.js";
@@ -11,10 +10,10 @@ import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { createLayoutComponent } from "./layoutComponent.js";
 
+
 // ============================
 // Section: Route Definitions
 // ============================
-
 const routes = [
     { path: "/", component: HomePage },
     { path: "/login", component: LoginPage },
@@ -25,10 +24,10 @@ const routes = [
     { path: "/reset-password", component: ResetPasswordPage }
 ];
 
+
 // ============================
 // Section: Axios Configuration
 // ============================
-
 axios.defaults.baseURL = "https://localhost:7016/api";
 axios.defaults.withCredentials = true; // Ensure cookies (session + CSRF) are sent
 
@@ -45,10 +44,10 @@ axios.interceptors.request.use((config) => {
     return config;
 });
 
+
 // ============================
 // Section: Global State for Login
 // ============================
-
 export const globalState = Vue.reactive({
     isLoggedIn: false
 });
@@ -72,14 +71,12 @@ export async function checkLoginStatus() {
 // ============================
 // Section: Initialize FingerprintJS
 // ============================
-
 window.fpPromise = FingerprintJS.load();
 
 
 // ============================
 // Section: Visitor ID Initialization
 // ============================
-
 export async function initializeVisitorId() {
     let visitorId = localStorage.getItem("visitorId");
     if (!visitorId) {
@@ -99,7 +96,6 @@ window.fpPromise.then(() => {
 // ============================
 // Section: Vue Router Initialization
 // ============================
-
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
     routes
@@ -108,7 +104,6 @@ const router = VueRouter.createRouter({
 // ============================
 // Section: Vue App Initialization
 // ============================
-
 const app = Vue.createApp({
     template: `<layout-component></layout-component>`,
     setup() {
