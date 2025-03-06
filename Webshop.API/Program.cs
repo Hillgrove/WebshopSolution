@@ -2,6 +2,16 @@ using Webshop.API.Middleware;
 using Webshop.Data;
 using Webshop.Services;
 
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+    builder.AddDebug();
+});
+
+var logger = loggerFactory.CreateLogger<Program>();
+
+logger.LogInformation("Application is starting...");
+
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
@@ -28,14 +38,10 @@ builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.Name = ".Webshop.Session";
-    // Protects against XSS
-    options.Cookie.HttpOnly = true;
-    // Makes sure cookie is not blocked by GDPR consent
-    options.Cookie.IsEssential = true;
-    // None because frontend and backend are 2 different domains
-    options.Cookie.SameSite = SameSiteMode.None;
-    // Enforce HTTPS in production
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; 
+    options.Cookie.HttpOnly = true;  // Protects against XSS
+    options.Cookie.IsEssential = true;  // Ensure GDPR consent doesn't block it
+    options.Cookie.SameSite = SameSiteMode.None;  // Required for cross-origin cookies
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // Enforce HTTPS
 });
 
 // HSTS (ASVS 14.4.5)
@@ -73,6 +79,9 @@ else
 }
 
 app.UseHttpsRedirection();
+
+// Must be before authentication and controllers
+app.UseSession();
 
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
