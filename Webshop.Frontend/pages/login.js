@@ -29,12 +29,12 @@ export const LoginPage = {
                                 </div>
 
                                 <!-- Remember me -->
-                                <div class="mb-4">
+                                <!-- <div class="mb-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="" id="remember" checked>
                                         <label class="form-check-label" for="remember">Remember me</label>
                                     </div>
-                                </div>
+                                </div>-->
 
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
