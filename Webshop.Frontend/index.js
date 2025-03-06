@@ -28,7 +28,10 @@ const routes = [
 // ============================
 // Section: Axios Configuration
 // ============================
-axios.defaults.baseURL = "https://localhost:7016/api";
+// axios.defaults.baseURL = "https://localhost:7016/api";
+// axios.defaults.baseURL = "https://api.webshop.hillgrove.dk/api"; // Requires Custom Domains setup in Azure for SSL binding
+axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+
 axios.defaults.withCredentials = true; // Ensure cookies (session + CSRF) are sent
 
 // Interceptor to attach CSRF token from cookies to headers
