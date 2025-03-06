@@ -24,23 +24,31 @@ export const RegisterPage = {
 
                                 <!-- Password input -->
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="password" v-model="registerData.password" id="password" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <input class="form-control" type="password" v-model="registerData.password" id="password" required minlength="8" maxlength="64">
                                     <label class="form-label" for="password">Password</label>
                                 </div>
 
-
                                 <!-- Repeat Password input -->
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="password" v-model="registerData.repeatPassword" id="repeatpassword" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <input class="form-control" type="password" v-model="registerData.repeatPassword" id="repeatpassword" required minlength="8" maxlength="64">
                                     <label class="form-label" for="repeatpassword">Repeat Password</label>
                                 </div>
 
+                                <!-- Password Mismatch Warning -->
+                                <div v-if="passwordMismatch" class="text-danger">
+                                    <p>Passwords do not match.</p>
+                                </div>
+
                                 <!-- Submit button -->
-                                <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordFeedback === 'Very weak' ||
-                                    passwordFeedback === 'Weak' ||
-                                    passwordFeedback === '' ||
-                                    registerData.password.length < 8"
-                                >Register</button>
+                                <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordMismatch
+                                                                                                     || passwordFeedback === 'Very weak'
+                                                                                                     || passwordFeedback === 'Weak'
+                                                                                                     || registerData.password.length < 8
+                                                                                                     || !registerData.password
+                                                                                                     || !registerData.repeatPassword">
+                                    Register
+                                </button>
+
 
                             </form>
 
@@ -81,18 +89,25 @@ export const RegisterPage = {
         }
     },
 
-    methods: {
-        analyzePassword() {
-            if (!this.registerData.password) {
-                this.passwordFeedback = ""
-                return
+    computed: {
+        passwordMismatch() {
+            return this.registerData.password !== this.registerData.repeatPassword
+        }
+    },
+
+    watch: {
+        "registerData.password"(newPassword) {
+            if (!newPassword) {
+                this.passwordFeedback = "";
+                return;
             }
+            const result = zxcvbn(newPassword);
+            const strengthLabels = ["Very weak", "Weak", "Fair", "Strong", "Very strong"];
+            this.passwordFeedback = strengthLabels[result.score];
+        }
+    },
 
-            const result = zxcvbn(this.registerData.password)
-            const strengthLabels = ["Very weak", "Weak", "Fair", "Strong", "Very strong"]
-            this.passwordFeedback = strengthLabels[result.score]
-        },
-
+    methods: {
         async registerUser() {
             if (this.registerData.password !== this.registerData.repeatPassword) {
                 this.message = "Passwords do not match.";
