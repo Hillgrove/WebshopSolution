@@ -92,6 +92,11 @@ namespace Webshop.Services
                 return new ResultDto { Success = false, Error = ErrorCode.WeakPassword, Message = "Password does not meet the required criteria." };
             }
 
+            if (await _passwordService.IsPasswordPwned(resetPasswordDto.NewPassword))
+            {
+                return new ResultDto { Success = false, Message = "This password has been found in data breaches. Please choose another." };
+            }
+
             user.PasswordHash = _hashingService.GenerateHash(resetPasswordDto.NewPassword);
             user.PasswordResetToken = null;
             user.PasswordResetTokenExpiration = null;
@@ -159,12 +164,11 @@ namespace Webshop.Services
             return new ResultDto { Success = true, Message = "If this email exists in our system, you will receive a password reset email." };
         }
 
-        public async Task<ResultDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        public async Task<ResultDto> ChangePasswordAsync(string email, ChangePasswordDto changePasswordDto)
         {
-            // TODO: check if user is logged in?
-            // TODO: refactor all places that validates password
+            // TODO: refactor all places that validates password to exract to privat method?
 
-            if (!await VerifyUserCredentialsAsync(changePasswordDto.Email, changePasswordDto.OldPassword))
+            if (!await VerifyUserCredentialsAsync(email, changePasswordDto.OldPassword))
             {
                 return new ResultDto { Success = false, Message = "You have entered an invalid username or password" };
             }
@@ -184,7 +188,7 @@ namespace Webshop.Services
                 return new ResultDto { Success = false, Message = "This password has been found in data breaches. Please choose another." };
             }
 
-            var user = await _userRepository.GetUserByEmailAsync(changePasswordDto.Email);
+            var user = await _userRepository.GetUserByEmailAsync(email);
             user!.PasswordHash = _hashingService.GenerateHash(changePasswordDto.NewPassword);
             await _userRepository.UpdateAsync(user);
 

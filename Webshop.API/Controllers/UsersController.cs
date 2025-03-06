@@ -236,7 +236,7 @@ namespace Webshop.API.Controllers
                 return Unauthorized("User not logged in.");
             }
 
-            var result = await _userService.ChangePasswordAsync(changePasswordDto);
+            var result = await _userService.ChangePasswordAsync(userEmail, changePasswordDto);
             if (!result.Success)
             {
                 return BadRequest(result.Message);
