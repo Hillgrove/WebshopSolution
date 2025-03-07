@@ -92,6 +92,9 @@ app.UseSession();
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
+// Apply CSRF protection middleware before authentication
+app.UseMiddleware<CsrfMiddleware>();
+
 // Ensure Content-Type response header is set properly (ASVS 14.4.1, 14.4.4, 14.4.3)
 app.UseMiddleware<ResponseHeaderMiddleware>();
 
@@ -107,9 +110,6 @@ app.Use(async (context, next) =>
     }
     await next();
 });
-
-// Apply CSRF protection middleware before authentication
-app.UseMiddleware<CsrfMiddleware>();
 
 app.UseAuthorization();
 app.MapControllers();
