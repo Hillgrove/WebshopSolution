@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Services;
@@ -47,8 +48,15 @@ namespace Webshop.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserDto>> Get(int id)
         {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
@@ -57,6 +65,21 @@ namespace Webshop.API.Controllers
 
             UserDto userDto = new UserDto { Id = user.Id, Email = user.Email };
             return Ok(userDto);
+        }
+
+        // GET api/<UsersController>/me
+        [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult GetCurrentUser()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            return Ok(new { email = userEmail });
         }
 
         // POST api/<UsersController>/register
@@ -94,7 +117,7 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.LoginAsync(HttpContext, userAuthDto);
+            ResultDto result = await _userService.LoginAsync(HttpContext, userAuthDto);
 
             if (!result.Success && result.Error == ErrorCode.RateLimited)
             {
@@ -105,16 +128,41 @@ namespace Webshop.API.Controllers
             {
                 return Unauthorized(result.Message);
             }
-            
-            return Ok(result.Message);
+
+            // Store user session
+            HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
+
+            // Generate CSRF token
+            var csrfToken = Guid.NewGuid().ToString();
+
+            // Log token before setting
+            Console.WriteLine($"Setting CSRF Cookie: {csrfToken}");
+
+            HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
+            {
+                HttpOnly = true,                   // Must be accessible by JavaScript
+                Secure = true,                      // HTTPS only
+                SameSite = SameSiteMode.None,       // Due to 2 different domains
+                Path = "/",                          // Available across all endpoints
+            });
+
+            return Ok(new { message = result.Message, csrfToken });
         }
 
         // POST api/<UsersController>/logout
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult Logout()
         {
-            // TODO: implement Logout endpoint
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+            
+            //HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
+            HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
             return Ok(new { message = "Logged out" });
         }
 
@@ -173,11 +221,11 @@ namespace Webshop.API.Controllers
             return Ok("Password has been reset successfully.");
         }
 
-        // TODO: implement ChangePassword endpoint
         // POST api/<UsersController>/change-password
         [HttpPost("change-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             if (!ModelState.IsValid)
@@ -185,7 +233,13 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.ChangePasswordAsync(changePasswordDto);
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            var result = await _userService.ChangePasswordAsync(userEmail, changePasswordDto);
             if (!result.Success)
             {
                 return BadRequest(result.Message);

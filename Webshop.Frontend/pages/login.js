@@ -1,3 +1,4 @@
+import { checkLoginStatus } from "../index.js";
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -28,12 +29,12 @@ export const LoginPage = {
                                 </div>
 
                                 <!-- Remember me -->
-                                <div class="mb-4">
+                                <!-- <div class="mb-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" value="" id="remember" checked>
                                         <label class="form-check-label" for="remember">Remember me</label>
                                     </div>
-                                </div>
+                                </div>-->
 
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
@@ -72,20 +73,39 @@ export const LoginPage = {
 
     methods: {
         async loginUser() {
+            // Normalize email
+            this.loginData.email = this.loginData.email.trim().toLowerCase();
+
             // Retrieve visitorId from local storage
-            const visitorId = localStorage.getItem('visitorId');
+            let visitorId = localStorage.getItem("visitorId");
+            if (!visitorId) {
+                console.log("Visitor ID missing. Waiting for FingerprintJS...");
+                visitorId = await window.fpPromise.then(fp => fp.get()).then(result => {
+                    localStorage.setItem("visitorId", result.visitorId);
+                    return result.visitorId;
+                });
+            }
 
             try {
                 // Send login request
-                this.loginData.email = this.loginData.email.trim().toLowerCase()
-
                 const response = await axios.post("/Users/login", {
                     ...this.loginData,
                     visitorId
                 });
 
+                // Store CSRF token in localStorage
+                if (response.data.csrfToken) {
+                    console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
+                    localStorage.setItem("csrf-token", response.data.csrfToken);
+                }
+
                 if (response.status === 200) {
-                    this.message = "Login successful!";
+                    setTimeout(async () => {
+                        await checkLoginStatus();
+                    }, 500); // Ensure session is properly stored before checking login status
+
+                    // Redirect to home page
+                    this.$router.push("/");
                 }
 
             } catch (error) {

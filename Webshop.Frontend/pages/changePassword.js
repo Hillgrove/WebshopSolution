@@ -16,37 +16,38 @@ export const ChangePasswordPage = {
                         <div class="card-body">
                             <form @submit.prevent="changePassword">
 
-                                <!-- Email input -->
+                                <!-- Old Password input -->
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="email" v-model="changeData.email" id="email" required>
-                                    <label class="form-label" for="email">Email address</label>
-                                </div>
-
-                                <!-- Password input -->
-                                <div class="form-outline mb-4">
-                                    <input class="form-control" type="password" v-model="changeData.oldPassword" id="oldPassword">
+                                    <input class="form-control" type="password" v-model="changeData.oldPassword" id="oldPassword" required>
                                     <label class="form-label" for="oldPassword">Old Password</label>
                                 </div>
 
-
                                 <!-- New Password input -->
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="password" v-model="changeData.newPassword" id="newPassword" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <input class="form-control" type="password" v-model="changeData.newPassword" id="newPassword" required minlength="8" maxlength="64">
                                     <label class="form-label" for="newPassword">New Password</label>
                                 </div>
 
                                 <!-- Repeat new Password input -->
                                 <div class="form-outline mb-4">
-                                    <input class="form-control" type="password" v-model="changeData.repeatNewPassword" id="repeatNewPassword" required minlength="8" maxlength="64" @input="analyzePassword">
+                                    <input class="form-control" type="password" v-model="changeData.repeatNewPassword" id="repeatNewPassword" required minlength="8" maxlength="64">
                                     <label class="form-label" for="repeatNewPassword">Repeat New Password</label>
                                 </div>
 
+                                <!-- Password Mismatch Warning -->
+                                <div v-if="passwordMismatch" class="text-danger">
+                                    <p>Passwords do not match.</p>
+                                </div>
+
                                 <!-- Submit button -->
-                                <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordFeedback === 'Very weak' ||
-                                    passwordFeedback === 'Weak' ||
-                                    passwordFeedback === '' ||
-                                    changeData.password.length < 8"
-                                >Change Password</button>
+                                <button type="submit" class="btn btn-primary btn-block mb-4" :disabled="passwordMismatch
+                                                                                                     || passwordFeedback === 'Very weak'
+                                                                                                     || passwordFeedback === 'Weak'
+                                                                                                     || changeData.newPassword.length < 8
+                                                                                                     || !changeData.newPassword
+                                                                                                     || !changeData.repeatNewPassword">
+                                    Change Password
+                                </button>
 
                             </form>
 
@@ -67,38 +68,54 @@ export const ChangePasswordPage = {
             </div>
         </div>
     `,
+
     data() {
         return {
-            changeData: { email: "", oldPasword: "", newPassword: "", repeatNewPassword: "" },
+            changeData: { oldPassword: "", newPassword: "", repeatNewPassword: "" },
             message: "",
             passwordFeedback: "",
         }
     },
 
-    methods: {
-        analyzePassword() {
-            if (!this.changeData.password) {
-                this.passwordFeedback = ""
-                return
-            }
+    computed: {
+        passwordMismatch() {
+            return this.changeData.newPassword !== this.changeData.repeatNewPassword
+        }
+    },
 
-            const result = zxcvbn(this.changeData.password)
-            const strengthLabels = ["Very weak", "Weak", "Fair", "Strong", "Very strong"]
-            this.passwordFeedback = strengthLabels[result.score]
+    watch: {
+        "changeData.oldPassword"() {
+            if (this.changeData.oldPassword) {
+                this.message = "";
+            }
         },
 
-        async changePassword() {
-            this.changeData.email = this.changeData.email.trim().toLowerCase()
+        "changeData.newPassword"(newPassword) {
+            if (!newPassword) {
+                this.passwordFeedback = "";
+                return;
+            }
+            const result = zxcvbn(newPassword);
+            const strengthLabels = ["Very weak", "Weak", "Fair", "Strong", "Very strong"];
+            this.passwordFeedback = strengthLabels[result.score];
+        }
+    },
 
+    methods: {
+        async changePassword() {
             try {
                 const response = await axios.post("/Users/change-password", this.changeData)
+                this.changeData.oldPassword = ""
+                this.changeData.newPassword = ""
+                this.changeData.repeatNewPassword = ""
+                this.passwordFeedback = ""
                 this.message = "Password changed sucessfully!"
             } catch (error) {
                 this.changeData.oldPassword = ""
-                this.changeData.newpassword = ""
+                this.changeData.newPassword = ""
                 this.changeData.repeatNewPassword = ""
                 this.passwordFeedback = ""
-                this.message = "Registration failed: " + error.response.data
+                this.message = "Password change failed: " + error.response.data
             }
         }
     }

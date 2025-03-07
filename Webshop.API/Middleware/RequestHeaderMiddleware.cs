@@ -1,4 +1,4 @@
-﻿namespace Webshop.API
+﻿namespace Webshop.API.Middleware
 {
     public class RequestHeaderMiddleware
     {
@@ -12,7 +12,25 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
+            Console.WriteLine($"[{context.TraceIdentifier}] RequestHeaderMiddleware - Method: {context.Request.Method}, Path: {context.Request.Path}");
+
             var contentType = context.Request.Headers.ContentType.ToString().ToLower();
+
+            var path = context.Request.Path.ToString().ToLower();
+
+            // Skip Content-Type validation for logout
+            if (path == "/api/users/logout")
+            {
+                await _next(context);
+                return;
+            }
+
+            // Skip Content-Type check for GET requests
+            if (context.Request.Method == HttpMethods.Get)
+            {
+                await _next(context);
+                return;
+            }
 
             if (string.IsNullOrEmpty(contentType) || !_allowedContentTypes.Contains(contentType))
             {
