@@ -49,8 +49,6 @@ export function createLayoutComponent(globalState) {
                         localStorage.setItem("visitorId", visitorId); // Restore visitorId
                     }
 
-                    document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"; // Clear CSRF token
-                    // await checkLoginStatus(); // Refresh session state
                     setTimeout(checkLoginStatus, 500);
 
                     window.location.href = "/#/login"; // Force a redirect to login

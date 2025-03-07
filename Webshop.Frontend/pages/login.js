@@ -93,9 +93,13 @@ export const LoginPage = {
                     visitorId
                 });
 
+                // Store CSRF token in localStorage
+                if (response.data.csrfToken) {
+                    console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
+                    localStorage.setItem("csrf-token", response.data.csrfToken);
+                }
+
                 if (response.status === 200) {
-                    // Ensure CSRF token is now stored in cookies
-                    document.cookie = `XSRF-TOKEN=${response.headers['XSRF-TOKEN']}; Secure; SameSite=None`;
                     setTimeout(async () => {
                         await checkLoginStatus();
                     }, 500); // Ensure session is properly stored before checking login status

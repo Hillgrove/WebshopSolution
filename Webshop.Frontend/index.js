@@ -29,23 +29,9 @@ const routes = [
 // Section: Axios Configuration
 // ============================
 // axios.defaults.baseURL = "https://localhost:7016/api";
-// axios.defaults.baseURL = "https://api.webshop.hillgrove.dk/api"; // Requires Custom Domains setup in Azure for SSL binding
 axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
 
-axios.defaults.withCredentials = true; // Ensure cookies (session + CSRF) are sent
-
-// Interceptor to attach CSRF token from cookies to headers
-axios.interceptors.request.use((config) => {
-    const csrfToken = document.cookie.split('; ')
-                                     .find(row => row.startsWith('XSRF-TOKEN='))
-                                     ?.split('=')[1];
-
-    if (csrfToken) {
-        config.headers['X-XSRF-TOKEN'] = csrfToken;
-    }
-
-    return config;
-});
+axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
@@ -60,19 +46,28 @@ export async function checkLoginStatus() {
     try {
         const response = await axios.get("/Users/me");
         globalState.isLoggedIn = response.status === 200;
-    } catch (error) {
-        if (error.response?.status === 401) {
-            globalState.isLoggedIn = false; // User is not logged in, no need to warn
-            return;
-        }
-        console.warn("Login status check failed:", error.response?.status, error.response?.data);
+    } catch {
         globalState.isLoggedIn = false;
     }
 }
 
 
 // ============================
-// Section: Initialize FingerprintJS
+// Section: Axios Interceptors
+// ============================
+axios.interceptors.response.use(
+    response => response, // Pass-through success responses
+    async error => {
+        if (error.response?.status === 401) {
+            globalState.isLoggedIn = false;
+        }
+        return Promise.reject(error);
+    }
+);
+
+
+/// ============================
+// Section: FingerprintJS Initialization
 // ============================
 window.fpPromise = FingerprintJS.load();
 
@@ -90,7 +85,7 @@ export async function initializeVisitorId() {
     }
 }
 
-// Call this at startup after FingerprintJS is initialized
+// Call once at startup after FingerprintJS is initialized
 window.fpPromise.then(() => {
     initializeVisitorId().then(() => checkLoginStatus());
 });
@@ -103,6 +98,7 @@ const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
     routes
 });
+
 
 // ============================
 // Section: Vue App Initialization
@@ -119,5 +115,8 @@ app.component("layout-component", createLayoutComponent(globalState));
 
 app.use(router);
 app.mount("#app");
+
+// Ensure login status is checked when the page loads
+// window.addEventListener("load", checkLoginStatus);
 
 console.log("Vue app initialized");
