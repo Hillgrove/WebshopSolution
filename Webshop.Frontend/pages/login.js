@@ -95,7 +95,7 @@ export const LoginPage = {
 
                 // Store CSRF token in localStorage
                 if (response.data.csrfToken) {
-                    console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
+                    // console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
                     localStorage.setItem("csrf-token", response.data.csrfToken);
                 }
 
