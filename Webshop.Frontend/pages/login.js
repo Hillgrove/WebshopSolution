@@ -95,14 +95,13 @@ export const LoginPage = {
 
                 console.log("Response Headers:", response.headers); // DEBUG: Log full headers
 
-                // Retrieve CSRF token from response header
+                // Retrieve CSRF token from response header (not cookies)
                 const csrfToken = response.headers["x-csrf-token"];
-                if (!csrfToken) {
-                    console.error("CSRF token missing in response headers!");
-                }
-                else {
+                if (csrfToken) {
                     console.log("CSRF Token Retrieved:", csrfToken);
-                    localStorage.setItem("csrf-token", csrfToken);  // Store token in localStorage for requests
+                    document.cookie = `csrf-token=${csrfToken}; path=/; Secure; SameSite=None`; // Store in cookie manually
+                } else {
+                    console.error("CSRF token missing in response headers!");
                 }
 
                 if (response.status === 200) {

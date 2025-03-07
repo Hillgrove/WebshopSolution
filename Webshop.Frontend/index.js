@@ -66,17 +66,23 @@ axios.interceptors.response.use(
 );
 
 axios.interceptors.request.use(config => {
-    const csrfToken = localStorage.getItem("csrf-token");
+    const csrfToken = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrf-token='))
+        ?.split('=')[1]; // Extract CSRF token from cookies
+
     if (csrfToken) {
-        console.log("Adding CSRF Token to request:", csrfToken); // DEBUG LOG
+        console.log("Adding CSRF Token to request:", csrfToken);
         config.headers["X-CSRF-Token"] = csrfToken;
     } else {
-        console.warn("No CSRF Token found in localStorage!");
+        console.warn("No CSRF Token found in cookies!");
     }
+
     return config;
 }, error => {
     return Promise.reject(error);
 });
+
 
 
 /// ============================

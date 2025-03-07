@@ -49,6 +49,10 @@ export function createLayoutComponent(globalState) {
                         localStorage.setItem("visitorId", visitorId); // Restore visitorId
                     }
 
+                    // Remove frontend CSRF cookie manually
+                    document.cookie = "csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=None";
+
+
                     // Redirect and refresh to get a new CSRF token
                     setTimeout(() => {
                         window.location.href = "/#/login"; // Redirect to login page
