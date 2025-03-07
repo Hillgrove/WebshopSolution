@@ -11,6 +11,8 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
+            Console.WriteLine($"[{context.TraceIdentifier}] ResponseHeaderMiddleware - Processing response.");
+
             var headers = context.Response.Headers;
 
             // Add X-Content-Type-Options header
@@ -33,6 +35,8 @@
             }
 
             await _next(context);
+
+            Console.WriteLine($"[{context.TraceIdentifier}] ResponseHeaderMiddleware - Final Content-Type: {context.Response.ContentType}");
 
             if (!headers.ContainsKey("Content-Type"))
             {

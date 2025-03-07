@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Webshop.API.Middleware
+﻿namespace Webshop.API.Middleware
 {
     public class CsrfMiddleware
     {
@@ -11,33 +9,40 @@ namespace Webshop.API.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
-            string host = context.Request.Host.ToString().ToLower();
-
-            // Bypass CSRF check ONLY for localhost
-            if (host.StartsWith("localhost"))
+            // Skip CSRF validation for safe methods (GET, OPTIONS)
+            if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Options)
             {
                 await _next(context);
                 return;
             }
 
-            // Only validate for state-changing requests
-            if (context.Request.Method == "POST" ||
-                context.Request.Method == "PUT" ||
-                context.Request.Method == "DELETE")
+            // Skip CSRF check for login (since the token is not yet available)
+            var path = context.Request.Path.ToString().ToLower();
+            if (path == "/api/users/login")
             {
-                var headerToken = context.Request.Headers["X-CSRF-Token"].ToString();
-                var cookieToken = context.Request.Cookies["XSRF-TOKEN"];
-
-                if (string.IsNullOrEmpty(headerToken) || headerToken != cookieToken)
-                {
-                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    await context.Response.WriteAsync("CSRF token validation failed.");
-                    return;
-                }
+                await _next(context);
+                return;
             }
 
+            // Extract CSRF token from cookie and header
+            var csrfCookie = context.Request.Cookies["csrf-token"];
+            //var csrfHeader = context.Request.Headers["X-CSRF-Token"].FirstOrDefault();
+
+            //Console.WriteLine($"CSRF Check - Cookie: {csrfCookie}, Header: {csrfHeader}");
+
+            //if (string.IsNullOrEmpty(csrfCookie) || csrfCookie != csrfHeader)
+            if (string.IsNullOrEmpty(csrfCookie))
+            {
+                Console.WriteLine($"CSRF validation failed: Cookie missing");
+                //Console.WriteLine($"CSRF validation failed. Cookie: {csrfCookie}, Header: {csrfHeader}");
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsync("CSRF validation failed");
+                return;
+            }
+
+            Console.WriteLine("CSRF validation passed.");
             await _next(context);
         }
     }

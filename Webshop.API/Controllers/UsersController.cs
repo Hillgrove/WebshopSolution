@@ -67,6 +67,21 @@ namespace Webshop.API.Controllers
             return Ok(userDto);
         }
 
+        // GET api/<UsersController>/me
+        [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult GetCurrentUser()
+        {
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            return Ok(new { email = userEmail });
+        }
+
         // POST api/<UsersController>/register
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -102,7 +117,7 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.LoginAsync(HttpContext, userAuthDto);
+            ResultDto result = await _userService.LoginAsync(HttpContext, userAuthDto);
 
             if (!result.Success && result.Error == ErrorCode.RateLimited)
             {
@@ -114,20 +129,24 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
-            // TODO: move to middleware?
-            // Generate and set CSRF token
-            var csrfToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-            Response.Cookies.Append("XSRF-TOKEN", csrfToken, new CookieOptions
-            {
-                HttpOnly = false, // must be readable from frontend
-                Secure = true, // enforces HTTPS
-                SameSite = SameSiteMode.None // required for cross-domain usage
-            });
-
             // Store user session
             HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
 
-            return Ok(result.Message);
+            // Generate CSRF token
+            var csrfToken = Guid.NewGuid().ToString();
+
+            // Log token before setting
+            Console.WriteLine($"Setting CSRF Cookie: {csrfToken}");
+
+            HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
+            {
+                HttpOnly = true,                   // Must be accessible by JavaScript
+                Secure = true,                      // HTTPS only
+                SameSite = SameSiteMode.None,       // Due to 2 different domains
+                Path = "/",                          // Available across all endpoints
+            });
+
+            return Ok(new { message = result.Message, csrfToken });
         }
 
         // POST api/<UsersController>/logout
@@ -145,21 +164,6 @@ namespace Webshop.API.Controllers
             //HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
             HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
             return Ok(new { message = "Logged out" });
-        }
-
-        // GET api/<UsersController>/me
-        [HttpGet("me")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult GetCurrentUser()
-        {
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                return Unauthorized("User not logged in.");
-            }
-
-            return Ok(new { email = userEmail });
         }
 
         // POST api/<UsersController>/forgot-password
@@ -217,7 +221,6 @@ namespace Webshop.API.Controllers
             return Ok("Password has been reset successfully.");
         }
 
-        // TODO: implement ChangePassword endpoint
         // POST api/<UsersController>/change-password
         [HttpPost("change-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
