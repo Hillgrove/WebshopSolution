@@ -86,9 +86,6 @@ app.UseSession();
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
-// Must be before authentication and controllers
-app.UseSession();
-
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
