@@ -140,9 +140,9 @@ namespace Webshop.API.Controllers
 
             HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
             {
-                HttpOnly = true,                   // Must be accessible by JavaScript
-                Secure = true,                      // HTTPS only
-                SameSite = SameSiteMode.None,       // Due to 2 different domains
+                HttpOnly = true,                   // Prevents JavaScript access (XSS protection)
+                Secure = true,                      // HTTPS only. Required for "SameSite=None"
+                SameSite = SameSiteMode.None,       // Allows sending CSRF cookie across different domains
                 Path = "/",                          // Available across all endpoints
             });
 
