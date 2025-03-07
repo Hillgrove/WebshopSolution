@@ -42,6 +42,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;  // Ensure GDPR consent doesn't block it
     options.Cookie.SameSite = SameSiteMode.None;  // Required for cross-origin cookies
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // Enforce HTTPS
+    options.Cookie.MaxAge = TimeSpan.FromHours(1); // Keeps session alive if browser closed
 });
 
 // HSTS (ASVS 14.4.5)
