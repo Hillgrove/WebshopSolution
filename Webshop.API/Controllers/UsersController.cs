@@ -129,9 +129,6 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
-            // Store user session
-            HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
-
             // Generate CSRF token
             var csrfToken = Guid.NewGuid().ToString();
 
@@ -140,15 +137,20 @@ namespace Webshop.API.Controllers
 
             HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
             {
-                HttpOnly = true,                    // Prevents JavaScript access (XSS protection)
+                HttpOnly = false,                   // Allow frontend to read the token
                 Secure = true,                      // HTTPS only. Required for "SameSite=None"
                 SameSite = SameSiteMode.None,       // Allows sending CSRF cookie across different domains
-                Path = "/",                         // Available across all endpoints
+                Path = "/"                         // Available across all endpoints
             });
 
             // Also send the CSRF token in a response header
             HttpContext.Response.Headers.Append("Access-Control-Expose-Headers", "X-CSRF-Token");
             HttpContext.Response.Headers["X-CSRF-Token"] = csrfToken;
+
+            // Store user session
+            HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
+            HttpContext.Session.SetString("CsrfToken", csrfToken);
+
 
             return Ok(new { message = result.Message, csrfToken });
         }

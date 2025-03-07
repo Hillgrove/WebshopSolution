@@ -18,24 +18,25 @@
                 return;
             }
 
-            // Skip CSRF check for login (since the token is not yet available)
+            // Skip CSRF validation for authentication-related actions
             var path = context.Request.Path.ToString().ToLower();
-            if (path == "/api/users/login")
+            if (path == "/api/users/login" || path == "/api/users/forgot-password" || path == "/api/users/reset-password")
             {
                 await _next(context);
                 return;
             }
 
-            // Extract CSRF cookie and header
+            // Extract CSRF cookie, header and session
             var csrfCookie = context.Request.Cookies["csrf-token"];
             var csrfHeader = context.Request.Headers["X-CSRF-Token"].ToString();
+            var csrfSessionToken = context.Session.GetString("CsrfToken");
 
             Console.WriteLine($"CSRF Middleware - Received Header: {csrfHeader}");
             Console.WriteLine($"CSRF Middleware - Received Cookie: {csrfCookie}");
 
-            if (string.IsNullOrEmpty(csrfCookie) || csrfCookie != csrfHeader)
+            if (string.IsNullOrEmpty(csrfSessionToken) || csrfSessionToken != csrfHeader)
             {
-                Console.WriteLine($"CSRF validation failed: Cookie and header do not match.");
+                Console.WriteLine("CSRF validation failed: Session token and header do not match.");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsync("CSRF validation failed");
                 return;
