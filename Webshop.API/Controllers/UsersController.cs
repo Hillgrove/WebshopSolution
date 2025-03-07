@@ -140,11 +140,15 @@ namespace Webshop.API.Controllers
 
             HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
             {
-                HttpOnly = true,                   // Prevents JavaScript access (XSS protection)
+                HttpOnly = true,                    // Prevents JavaScript access (XSS protection)
                 Secure = true,                      // HTTPS only. Required for "SameSite=None"
                 SameSite = SameSiteMode.None,       // Allows sending CSRF cookie across different domains
-                Path = "/",                          // Available across all endpoints
+                Path = "/",                         // Available across all endpoints
             });
+
+            // Also send the CSRF token in a response header
+            HttpContext.Response.Headers.Append("Access-Control-Expose-Headers", "X-CSRF-Token");
+            HttpContext.Response.Headers["X-CSRF-Token"] = csrfToken;
 
             return Ok(new { message = result.Message, csrfToken });
         }
@@ -163,6 +167,17 @@ namespace Webshop.API.Controllers
             
             //HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
             HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+
+            // Clear CSRF token by setting an expired cookie
+            HttpContext.Response.Cookies.Append("csrf-token", "", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTime.UtcNow.AddDays(-1) // Expire the cookie immediately
+            });
+
             return Ok(new { message = "Logged out" });
         }
 
