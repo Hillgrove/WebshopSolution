@@ -26,12 +26,16 @@
                 return;
             }
 
-            // Extract CSRF token from cookies
+            // Extract CSRF cookie and header
             var csrfCookie = context.Request.Cookies["csrf-token"];
+            var csrfHeader = context.Request.Headers["X-CSRF-Token"].ToString();
 
-            if (string.IsNullOrEmpty(csrfCookie))
-                {
-                Console.WriteLine($"CSRF validation failed: Cookie missing");
+            Console.WriteLine($"CSRF Middleware - Received Header: {csrfHeader}");
+            Console.WriteLine($"CSRF Middleware - Received Cookie: {csrfCookie}");
+
+            if (string.IsNullOrEmpty(csrfCookie) || csrfCookie != csrfHeader)
+            {
+                Console.WriteLine($"CSRF validation failed: Cookie and header do not match.");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 await context.Response.WriteAsync("CSRF validation failed");
                 return;
