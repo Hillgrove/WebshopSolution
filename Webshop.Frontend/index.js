@@ -99,6 +99,11 @@ const router = VueRouter.createRouter({
     routes
 });
 
+// Ensure login status is checked after each navigation
+router.afterEach(() => {
+    checkLoginStatus();
+});
+
 
 // ============================
 // Section: Vue App Initialization
