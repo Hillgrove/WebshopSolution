@@ -49,10 +49,13 @@ export function createLayoutComponent(globalState) {
                         localStorage.setItem("visitorId", visitorId); // Restore visitorId
                     }
 
-                    setTimeout(checkLoginStatus, 500);
-
-                    window.location.href = "/#/login"; // Force a redirect to login
-                } catch (error) {
+                    // Redirect and refresh to get a new CSRF token
+                    setTimeout(() => {
+                        window.location.href = "/#/login"; // Redirect to login page
+                        location.reload(); // Force a full page reload to reset session
+                    }, 500);
+                }
+                catch (error) {
                     console.error("Logout failed", error);
                 }
             };

@@ -93,11 +93,17 @@ export const LoginPage = {
                     visitorId
                 });
 
-                // // Store CSRF token in localStorage
-                // if (response.data.csrfToken) {
-                //     // console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
-                //     localStorage.setItem("csrf-token", response.data.csrfToken);
-                // }
+                console.log("Response Headers:", response.headers); // DEBUG: Log full headers
+
+                // Retrieve CSRF token from response header
+                const csrfToken = response.headers["x-csrf-token"];
+                if (!csrfToken) {
+                    console.error("CSRF token missing in response headers!");
+                }
+                else {
+                    console.log("CSRF Token Retrieved:", csrfToken);
+                    localStorage.setItem("csrf-token", csrfToken);  // Store token in localStorage for requests
+                }
 
                 if (response.status === 200) {
                     setTimeout(async () => {

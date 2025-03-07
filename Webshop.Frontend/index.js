@@ -65,6 +65,19 @@ axios.interceptors.response.use(
     }
 );
 
+axios.interceptors.request.use(config => {
+    const csrfToken = localStorage.getItem("csrf-token");
+    if (csrfToken) {
+        console.log("Adding CSRF Token to request:", csrfToken); // DEBUG LOG
+        config.headers["X-CSRF-Token"] = csrfToken;
+    } else {
+        console.warn("No CSRF Token found in localStorage!");
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
+
 
 /// ============================
 // Section: FingerprintJS Initialization
