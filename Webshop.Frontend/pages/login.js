@@ -93,11 +93,11 @@ export const LoginPage = {
                     visitorId
                 });
 
-                // Store CSRF token in localStorage
-                if (response.data.csrfToken) {
-                    // console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
-                    localStorage.setItem("csrf-token", response.data.csrfToken);
-                }
+                // // Store CSRF token in localStorage
+                // if (response.data.csrfToken) {
+                //     // console.log(`Storing CSRF Token: ${response.data.csrfToken}`);
+                //     localStorage.setItem("csrf-token", response.data.csrfToken);
+                // }
 
                 if (response.status === 200) {
                     setTimeout(async () => {
