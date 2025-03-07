@@ -62,7 +62,8 @@ builder.Services.AddCors(options =>
                           policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader()
-                                .AllowCredentials();
+                                .AllowCredentials()
+                                .WithExposedHeaders("X-CSRF-Token"); // Allow frontend to read this header
                       });
 });
 
