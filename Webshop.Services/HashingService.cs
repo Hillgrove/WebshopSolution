@@ -15,6 +15,8 @@ namespace Webshop.Services
         {
             return Argon2.Verify(hash, password);
         }
+
+        // SHA1 required for HaveIBeenPwned
         public string ComputeSha1Hash(string input)
         {
             using var sha1 = SHA1.Create();

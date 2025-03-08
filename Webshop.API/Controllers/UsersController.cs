@@ -129,6 +129,8 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
+
+            // ASVS: 3.2.1 - Generate a new session token on authentication
             // Generate CSRF token
             var csrfToken = Guid.NewGuid().ToString();
 

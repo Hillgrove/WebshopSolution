@@ -34,26 +34,44 @@ builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 
+// ASVS: 3.2.3 - Store session tokens securely using HttpOnly and Secure cookies
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.Name = ".Webshop.Session";
-    options.Cookie.HttpOnly = true;  // Protects against XSS
-    options.Cookie.IsEssential = true;  // Ensure GDPR consent doesn't block it
-    options.Cookie.SameSite = SameSiteMode.None;  // Required for cross-origin cookies
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // Enforce HTTPS
-    options.Cookie.MaxAge = TimeSpan.FromHours(1); // Keeps session alive if browser closed
+    // ASVS: 3.4.1 - Enforce Secure attribute to ensure session cookies are only sent over HTTPS
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  // Prevents transmission over HTTP
+
+    // ASVS: 3.4.2 - Enforce HttpOnly to prevent JavaScript access and mitigate XSS risks
+    options.Cookie.HttpOnly = true;  // Blocks client-side scripts from accessing session cookies
+
+    // ASVS: 3.4.3 - Use the SameSite attribute to mitigate CSRF attacks
+    options.Cookie.SameSite = SameSiteMode.None;  // Required for cross-site authentication
+
+    // ASVS: 3.4.4 - Use "__Host-" prefix to enforce HTTPS and prevent domain-wide cookies
+    options.Cookie.Name = "__Host-WebshopSession";  // Strengthens cookie scoping
+
+    // ASVS: 3.4.5 - Restrict session cookie scope to API routes only
+    options.Cookie.Path = "/api";  // Ensures session cookies are only sent to API endpoints
+
+    // Ensures the session cookie is always available, even if consent is not given
+    options.Cookie.IsEssential = true;
+
+    // Defines session expiration policies
+    options.Cookie.MaxAge = TimeSpan.FromHours(1);  // Allows session persistence even after browser restart
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Automatically expires session after inactivity
 });
 
-// HSTS (ASVS 14.4.5)
+
+// ASVS: 14.4.5 - Verify that a Strict-Transport-Security (HSTS) header  is included on all responses
+//                and for all subdomains
 builder.Services.AddHsts(options =>
 {
-    options.MaxAge = TimeSpan.FromDays(2*365);
+    options.MaxAge = TimeSpan.FromDays(2*365); // Recommended t
     options.IncludeSubDomains = true;
     options.Preload = true;
 });
 
-// CORS (ASVS 14.5.3)
+// CORS
+// ASVS: 14.5.3
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: "AllowSpecificOrigin",
@@ -91,10 +109,12 @@ app.UseCors("AllowSpecificOrigin");
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
-// Apply CSRF protection middleware before authentication
+// ASVS: 13.2.3 - Protect RESTful services from CSRF using the Double Submit Cookie Pattern
 app.UseMiddleware<CsrfMiddleware>();
 
-// Ensure Content-Type response header is set properly (ASVS 14.4.1, 14.4.4, 14.4.3)
+// ASVS: 14.4.1 - Ensure Content-Type is Set Correctly
+// ASVS: 14.4.3 - Enforce Content-Security-Policy headers (CSP)
+// ASVS: 14.4.4 - Ensure nosniff header on all responses
 app.UseMiddleware<ResponseHeaderMiddleware>();
 
 // Custom middleware - Allowed HTTP Methods (ASVS 14.5.1)

@@ -10,6 +10,7 @@ namespace Webshop.Services
 
         public RateLimitingService()
         {
+            // TODO: Atm "time to try" is the same as the lockout period. Maybe change it?
             _rateLimitConfigs = new Dictionary<string, (int MaxAttempts, TimeSpan LockoutDuration)>
             {
                 { "Login", (3, TimeSpan.FromMinutes(10)) },
