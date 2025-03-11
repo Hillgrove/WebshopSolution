@@ -1,4 +1,4 @@
-export function createLayoutComponent(globalState) {
+export function createLayoutComponent() {
     return {
         template: `
             <div class="container">
@@ -33,7 +33,7 @@ export function createLayoutComponent(globalState) {
         `,
 
         setup() {
-            const isLoggedIn = Vue.computed(() => globalState.isLoggedIn);
+            const isLoggedIn = Vue.ref(document.cookie.includes("csrf-token="));
 
             const logoutUser = async () => {
                 try {
@@ -50,14 +50,15 @@ export function createLayoutComponent(globalState) {
                     // Remove frontend CSRF cookie manually
                     document.cookie = "csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=None";
 
+                    // Update login state
+                    isLoggedIn.value = false;
 
-                    // Redirect and refresh to get a new CSRF token
+                    // Redirect to login page
                     setTimeout(() => {
-                        window.location.href = "/#/login"; // Redirect to login page
-                        location.reload(); // Force a full page reload to reset session
+                        window.location.href = "/#/login";
+                        location.reload(); // Force full reload
                     }, 500);
-                }
-                catch (error) {
+                } catch (error) {
                     console.error("Logout failed", error);
                 }
             };

@@ -1,4 +1,3 @@
-import { checkLoginStatus } from "../index.js";
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -27,14 +26,6 @@ export const LoginPage = {
                                     <input class="form-control" type="password" v-model="loginData.password" id="password" required minlength="8" maxlength="64">
                                     <label class="form-label" for="password">Password</label>
                                 </div>
-
-                                <!-- Remember me -->
-                                <!-- <div class="mb-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="remember" checked>
-                                        <label class="form-check-label" for="remember">Remember me</label>
-                                    </div>
-                                </div>-->
 
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
@@ -105,10 +96,6 @@ export const LoginPage = {
                 }
 
                 if (response.status === 200) {
-                    setTimeout(async () => {
-                        await checkLoginStatus();
-                    }, 500); // Ensure session is properly stored before checking login status
-
                     // Redirect to home page
                     this.$router.push("/");
                 }

@@ -47,36 +47,8 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
-// Section: Global State for Login
-// ============================
-export const globalState = Vue.reactive({
-    isLoggedIn: false
-});
-
-// Function to check login status
-export async function checkLoginStatus() {
-    try {
-        const response = await axios.get("/Users/me");
-        globalState.isLoggedIn = response.status === 200;
-    } catch {
-        globalState.isLoggedIn = false;
-    }
-}
-
-
-// ============================
 // Section: Axios Interceptors
 // ============================
-axios.interceptors.response.use(
-    response => response, // Pass-through success responses
-    async error => {
-        if (error.response?.status === 401) {
-            globalState.isLoggedIn = false;
-        }
-        return Promise.reject(error);
-    }
-);
-
 axios.interceptors.request.use(config => {
     const csrfToken = document.cookie
         .split('; ')
@@ -94,7 +66,6 @@ axios.interceptors.request.use(config => {
 }, error => {
     return Promise.reject(error);
 });
-
 
 
 /// ============================
@@ -118,7 +89,7 @@ export async function initializeVisitorId() {
 
 // Call once at startup after FingerprintJS is initialized
 window.fpPromise.then(() => {
-    initializeVisitorId().then(() => checkLoginStatus());
+    initializeVisitorId();
 });
 
 
@@ -130,29 +101,18 @@ const router = VueRouter.createRouter({
     routes
 });
 
-// Ensure login status is checked after each navigation
-router.afterEach(() => {
-    checkLoginStatus();
-});
-
 
 // ============================
 // Section: Vue App Initialization
 // ============================
 const app = Vue.createApp({
-    template: `<layout-component></layout-component>`,
-    setup() {
-        return { globalState };
-    }
+    template: `<layout-component></layout-component>`
 });
 
 // Dynamically create and register the layout component
-app.component("layout-component", createLayoutComponent(globalState));
+app.component("layout-component", createLayoutComponent());
 
 app.use(router);
 app.mount("#app");
-
-// Ensure login status is checked when the page loads
-// window.addEventListener("load", checkLoginStatus);
 
 console.log("Vue app initialized");
