@@ -30,8 +30,18 @@ const routes = [
 // ============================
 // Section: Axios Configuration
 // ============================
-axios.defaults.baseURL = "https://localhost:7016/api";
-// axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+const devBaseURL = "https://localhost:7016/api";
+const prodBaseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+
+if (window.location.hostname === "localhost") {
+    console.log("Using development base URL:", devBaseURL);
+    axios.defaults.baseURL = devBaseURL;
+} else {
+    console.log("Using production base URL");
+    axios.defaults.baseURL = prodBaseURL;
+}
+
+
 
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
