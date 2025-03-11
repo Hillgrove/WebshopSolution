@@ -17,7 +17,7 @@ export function createLayoutComponent(globalState) {
                                     <router-link class="nav-link" to="/">Home</router-link>
                                 </li>
                                 <li class="nav-item">
-                                    <router-link class="nav-link" to="/about">About</router-link>
+                                    <router-link class="nav-link" to="/products">Products</router-link>
                                 </li>
                                 <li class="nav-item">
                                     <button @click="logoutUser" v-if="isLoggedIn" class="btn btn-danger">Log Out</button>
