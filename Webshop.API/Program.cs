@@ -132,10 +132,6 @@ app.UseMiddleware<OriginValidationMiddleware>();
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
-// ASVS: 13.2.3 - Protect RESTful services from CSRF using the Double Submit Cookie Pattern
-//app.UseMiddleware<CsrfMiddleware>();
-
-
 // ASVS: 14.4.1 - Ensure Content-Type is Set Correctly
 // ASVS: 14.4.3 - Enforce Content-Security-Policy headers (CSP)
 // ASVS: 14.4.4 - Ensure nosniff header on all responses
