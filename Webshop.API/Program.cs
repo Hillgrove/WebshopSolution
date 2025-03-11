@@ -49,9 +49,9 @@ builder.Services.AddSession(options =>
     // ASVS: 3.4.4 - Use "__Host-" prefix to enforce HTTPS and prevent domain-wide cookies
     options.Cookie.Name = "__Host-WebshopSession";  // Strengthens cookie scoping
 
-    // TODO: Fix this - if enabled sessions cookies are not created in browser
+    // TODO: Fix this - if set to "/api" sessions cookies are not created in browser
     // ASVS: 3.4.5 - Restrict session cookie scope to API routes only
-    //options.Cookie.Path = "/api";  // Ensures session cookies are only sent to API endpoints
+    options.Cookie.Path = "/";  // Ensures session cookies are only sent to API endpoints
 
     // Ensures the session cookie is always available, even if consent is not given
     options.Cookie.IsEssential = true;

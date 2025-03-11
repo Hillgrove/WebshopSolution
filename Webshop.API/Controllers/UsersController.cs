@@ -151,7 +151,7 @@ namespace Webshop.API.Controllers
 
             // Store user session
             HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
-            HttpContext.Session.SetString("CsrfToken", csrfToken);
+            //HttpContext.Session.SetString("CsrfToken", csrfToken);
 
 
             return Ok(new { message = result.Message, csrfToken });
@@ -169,8 +169,8 @@ namespace Webshop.API.Controllers
                 return Unauthorized("User not logged in.");
             }
             
-            //HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
-            HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+            HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
+            //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
 
             // Clear CSRF token by setting an expired cookie
             HttpContext.Response.Cookies.Append("csrf-token", "", new CookieOptions
