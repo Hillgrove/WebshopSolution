@@ -11,29 +11,28 @@ namespace Webshop.Data
         public UserRepositorySQLite(string connectionString)
         {
             _connectionString = connectionString;
-            InitializeDatabase();
         }
 
-        private void InitializeDatabase()
+        public async Task InitializeDatabase()
         {
             using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
             // TODO: If more tables/entities are added, move this to a separate DatabaseInitializer class.
             var command = new SQLiteCommand(connection)
             {
                 CommandText = @"
-                CREATE TABLE IF NOT EXISTS Users (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Email TEXT NOT NULL UNIQUE,
-                    PasswordHash TEXT NOT NULL,
-                    CreatedAt DATETIME NOT NULL,
-                    PasswordResetToken TEXT,
-                    PasswordResetTokenExpiration DATETIME
-                )"
+                    CREATE TABLE IF NOT EXISTS Users (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Email TEXT NOT NULL UNIQUE,
+                        PasswordHash TEXT NOT NULL,
+                        CreatedAt DATETIME NOT NULL,
+                        PasswordResetToken TEXT,
+                        PasswordResetTokenExpiration DATETIME
+                    )"
             };
 
-            command.ExecuteNonQuery();
+            await command.ExecuteNonQueryAsync();
         }
 
         public async Task<User> AddAsync(User newUser)
@@ -42,19 +41,30 @@ namespace Webshop.Data
             await connection.OpenAsync();
 
             // Insert new user
-            var insertCommand = new SQLiteCommand(connection)
+            using var transaction = await connection.BeginTransactionAsync();
+            try
             {
-                CommandText = @"
+                var insertCommand = new SQLiteCommand(connection)
+                {
+                    CommandText = @"
                     INSERT INTO Users (Email, PasswordHash, CreatedAt)
                     VALUES (@Email, @PasswordHash, @CreatedAt);
                     SELECT last_insert_rowid()"
-            };
+                };
 
-            insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
-            insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
-            insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
+                insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
+                insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
+                insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
 
-            newUser.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
+                newUser.Id = Convert.ToInt32(await insertCommand.ExecuteScalarAsync());
+
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+            }
+            
             return newUser;
         }
 
@@ -66,7 +76,7 @@ namespace Webshop.Data
             await connection.OpenAsync();
 
             var command = new SQLiteCommand("SELECT * FROM Users", connection);
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
@@ -136,7 +146,7 @@ namespace Webshop.Data
 
             return null;
         }
-
+        
         public async Task SavePasswordResetTokenAsync(int userId, string token, DateTime expiration)
         {
             using var connection = new SQLiteConnection(_connectionString);
