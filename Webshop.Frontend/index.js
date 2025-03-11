@@ -49,19 +49,19 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 // ============================
 // Section: Global State for Login
 // ============================
-// export const globalState = Vue.reactive({
-//     isLoggedIn: false
-// });
+export const globalState = Vue.reactive({
+    isLoggedIn: false
+});
 
-// // Function to check login status
-// export async function checkLoginStatus() {
-//     try {
-//         const response = await axios.get("/Users/me");
-//         globalState.isLoggedIn = response.status === 200;
-//     } catch {
-//         globalState.isLoggedIn = false;
-//     }
-// }
+// Function to check login status
+export async function checkLoginStatus() {
+    try {
+        const response = await axios.get("/Users/me");
+        globalState.isLoggedIn = response.status === 200;
+    } catch {
+        globalState.isLoggedIn = false;
+    }
+}
 
 
 // ============================
@@ -117,9 +117,9 @@ export async function initializeVisitorId() {
 }
 
 // Call once at startup after FingerprintJS is initialized
-// window.fpPromise.then(() => {
-//     initializeVisitorId().then(() => checkLoginStatus());
-// });
+window.fpPromise.then(() => {
+    initializeVisitorId().then(() => checkLoginStatus());
+});
 
 
 // ============================
@@ -131,9 +131,9 @@ const router = VueRouter.createRouter({
 });
 
 // Ensure login status is checked after each navigation
-// router.afterEach(() => {
-//     checkLoginStatus();
-// });
+router.afterEach(() => {
+    checkLoginStatus();
+});
 
 
 // ============================

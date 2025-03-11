@@ -1,5 +1,3 @@
-import { checkLoginStatus } from "./index.js";
-
 export function createLayoutComponent(globalState) {
     return {
         template: `
