@@ -12,7 +12,7 @@ export const ProductsPage = {
                             <p class="card-text fw-bold">{{ product.price }} kr.</p>
                         </div>
                         <div class="card-footer text-center">
-                            <button class="btn btn-primary">Add to basket</button>
+                            <button class="btn btn-primary" @click="addToCart(product)">Add to basket</button>
                         </div>
                     </div>
                 </div>
@@ -21,7 +21,10 @@ export const ProductsPage = {
     `,
 
     data() {
-        return { products: [] };
+        return {
+            // product: { id, name: "", Quantity,  price},
+            products: []
+        };
     },
 
     async mounted() {
@@ -32,5 +35,24 @@ export const ProductsPage = {
         catch (error) {
             console.error("Error fetching products:", error);
         }
+    },
+
+    methods: {
+        async addToCart(product) {
+            try {
+                await axios.post("/Cart/add", {
+                    ProductId: product.id,
+                    ProductName: product.name,
+                    Quantity: 1,
+                    PriceInOere: product.price * 100
+                });
+                alert("Product added to cart!");
+            }
+            catch (error) {
+                console.error("Error adding product to cart:" + error);
+            }
+
+        }
+
     }
 };

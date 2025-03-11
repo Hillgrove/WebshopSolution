@@ -10,6 +10,7 @@ import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { ProductsPage } from "./pages/products.js";
 import { createLayoutComponent } from "./layoutComponent.js";
+import { CartPage } from "./pages/cart.js";
 
 
 // ============================
@@ -23,7 +24,8 @@ const routes = [
     { path: "/change-password", component: ChangePasswordPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
     { path: "/reset-password", component: ResetPasswordPage },
-    { path: "/products", component: ProductsPage }
+    { path: "/products", component: ProductsPage },
+    { path: "/cart", component: CartPage }
 ];
 
 
@@ -41,27 +43,25 @@ if (window.location.hostname === "localhost") {
     axios.defaults.baseURL = prodBaseURL;
 }
 
-
-
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
 // Section: Global State for Login
 // ============================
-export const globalState = Vue.reactive({
-    isLoggedIn: false
-});
+// export const globalState = Vue.reactive({
+//     isLoggedIn: false
+// });
 
-// Function to check login status
-export async function checkLoginStatus() {
-    try {
-        const response = await axios.get("/Users/me");
-        globalState.isLoggedIn = response.status === 200;
-    } catch {
-        globalState.isLoggedIn = false;
-    }
-}
+// // Function to check login status
+// export async function checkLoginStatus() {
+//     try {
+//         const response = await axios.get("/Users/me");
+//         globalState.isLoggedIn = response.status === 200;
+//     } catch {
+//         globalState.isLoggedIn = false;
+//     }
+// }
 
 
 // ============================
@@ -117,9 +117,9 @@ export async function initializeVisitorId() {
 }
 
 // Call once at startup after FingerprintJS is initialized
-window.fpPromise.then(() => {
-    initializeVisitorId().then(() => checkLoginStatus());
-});
+// window.fpPromise.then(() => {
+//     initializeVisitorId().then(() => checkLoginStatus());
+// });
 
 
 // ============================
@@ -131,9 +131,9 @@ const router = VueRouter.createRouter({
 });
 
 // Ensure login status is checked after each navigation
-router.afterEach(() => {
-    checkLoginStatus();
-});
+// router.afterEach(() => {
+//     checkLoginStatus();
+// });
 
 
 // ============================
