@@ -18,8 +18,10 @@ export function createLayoutComponent() {
                                     <router-link class="nav-link" to="/products">Products</router-link>
                                 </li>
                                 <li class="nav-item">
-                                    <button @click="logoutUser" v-if="isLoggedIn" class="btn btn-danger">Log Out</button>
-                                    <router-link class="btn btn-success" to="/login" v-else>Log In</router-link>
+                                    <router-link class="btn btn-success" to="/login">Log In</router-link>
+                                </li>
+                                <li class="nav-item">
+                                    <button @click="logoutUser" class="btn btn-danger">Log Out</button>
                                 </li>
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/change-password">Change Password</router-link>
@@ -33,37 +35,20 @@ export function createLayoutComponent() {
         `,
 
         setup() {
-            const isLoggedIn = Vue.ref(document.cookie.includes("csrf-token="));
-
             const logoutUser = async () => {
                 try {
                     await axios.post("/Users/logout");
-
-                    // Preserve visitorId but clear session-related data
-                    const visitorId = localStorage.getItem("visitorId");
-
-                    localStorage.clear(); // Clear everything else
-                    if (visitorId) {
-                        localStorage.setItem("visitorId", visitorId); // Restore visitorId
-                    }
-
-                    // Remove frontend CSRF cookie manually
-                    document.cookie = "csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=None";
-
-                    // Update login state
-                    isLoggedIn.value = false;
-
-                    // Redirect to login page
+                    localStorage.clear();
                     setTimeout(() => {
                         window.location.href = "/#/login";
-                        location.reload(); // Force full reload
+                        location.reload();
                     }, 500);
                 } catch (error) {
                     console.error("Logout failed", error);
                 }
             };
 
-            return { isLoggedIn, logoutUser };
+            return { logoutUser };
         }
     };
 }

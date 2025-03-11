@@ -84,17 +84,6 @@ export const LoginPage = {
                     visitorId
                 });
 
-                console.log("Response Headers:", response.headers); // DEBUG: Log full headers
-
-                // Retrieve CSRF token from response header (not cookies)
-                const csrfToken = response.headers["x-csrf-token"];
-                if (csrfToken) {
-                    console.log("CSRF Token Retrieved:", csrfToken);
-                    document.cookie = `csrf-token=${csrfToken}; path=/; Secure; SameSite=None`; // Store in cookie manually
-                } else {
-                    console.error("CSRF token missing in response headers!");
-                }
-
                 if (response.status === 200) {
                     // Redirect to home page
                     this.$router.push("/");

@@ -46,28 +46,6 @@ if (window.location.hostname === "localhost") {
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
-// ============================
-// Section: Axios Interceptors
-// ============================
-axios.interceptors.request.use(config => {
-    const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf-token='))
-        ?.split('=')[1]; // Extract CSRF token from cookies
-
-    if (csrfToken) {
-        console.log("Adding CSRF Token to request:", csrfToken);
-        config.headers["X-CSRF-Token"] = csrfToken;
-    } else {
-        console.warn("No CSRF Token found in cookies!");
-    }
-
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
-
-
 /// ============================
 // Section: FingerprintJS Initialization
 // ============================

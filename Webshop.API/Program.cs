@@ -83,8 +83,7 @@ builder.Services.AddCors(options =>
                           policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader()
-                                .AllowCredentials()
-                                .WithExposedHeaders("X-CSRF-Token"); // Allow frontend to read this header
+                                .AllowCredentials();
                       });
 });
 
@@ -127,11 +126,15 @@ app.UseSession();
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
+// ASVS: 13.2.3 - Protect RESTful services from CSRF using origin request headers
+app.UseMiddleware<OriginValidationMiddleware>();
+
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
 
 // ASVS: 13.2.3 - Protect RESTful services from CSRF using the Double Submit Cookie Pattern
-app.UseMiddleware<CsrfMiddleware>();
+//app.UseMiddleware<CsrfMiddleware>();
+
 
 // ASVS: 14.4.1 - Ensure Content-Type is Set Correctly
 // ASVS: 14.4.3 - Enforce Content-Security-Policy headers (CSP)
