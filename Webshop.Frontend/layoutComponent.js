@@ -18,6 +18,9 @@ export function createLayoutComponent() {
                                     <router-link class="nav-link" to="/products">Products</router-link>
                                 </li>
                                 <li class="nav-item">
+                                    <router-link class="nav-link" to="/cart">Cart</router-link>
+                                </li>
+                                <li class="nav-item">
                                     <router-link class="btn btn-success" to="/login">Log In</router-link>
                                 </li>
                                 <li class="nav-item">

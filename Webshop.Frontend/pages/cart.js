@@ -1,13 +1,15 @@
 export const CartPage = {
     template: `
-            <div class="container mt-4">
+        <div class="container mt-4">
             <h1 class="text-center mb-4">Shopping Cart</h1>
-            <div v-if="cart.length === 0">
-                <p class="text-center">Your cart is empty.</p>
+
+            <div v-if="cart.length === 0" class="alert alert-info text-center">
+                Your cart is empty.
             </div>
+
             <div v-else>
-                <table class="table">
-                    <thead>
+                <table class="table table-bordered text-center">
+                    <thead class="table-dark">
                         <tr>
                             <th>Product</th>
                             <th>Quantity</th>
@@ -17,16 +19,23 @@ export const CartPage = {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in cart" :key="item.ProductId">
-                            <td>{{ item.ProductName }}</td>
-                            <td>
-                                <input type="number" v-model="item.Quantity" min="1" class="form-control"
-                                    @change="updateCart(item)">
+                        <tr v-for="item in cart" :key="item.productId">
+                            <td class="align-middle">{{ item.productName }}</td>
+                            <td class="align-middle">
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <button class="btn btn-outline-secondary btn-sm"
+                                        @click="changeQuantity(item.productId, -1)" :disabled="item.quantity <= 1">-</button>
+
+                                    <span class="mx-2">{{ item.quantity }}</span>
+
+                                    <button class="btn btn-outline-secondary btn-sm"
+                                        @click="changeQuantity(item.productId, 1)">+</button>
+                                </div>
                             </td>
-                            <td>{{ item.PriceInOere / 100 }} kr.</td>
-                            <td>{{ (item.Quantity * item.PriceInOere) / 100 }} kr.</td>
-                            <td>
-                                <button class="btn btn-danger" @click="removeFromCart(item.ProductId)">Remove</button>
+                            <td class="align-middle">{{ (item.priceInOere / 100).toFixed(2) }} kr.</td>
+                            <td class="align-middle">{{ ((item.quantity * item.priceInOere) / 100).toFixed(2) }} kr.</td>
+                            <td class="align-middle">
+                                <button class="btn btn-danger btn-sm" @click="removeFromCart(item.productId)">Remove</button>
                             </td>
                         </tr>
                     </tbody>
@@ -52,15 +61,21 @@ export const CartPage = {
                 this.cart = response.data;
             }
             catch (error) {
-                console.error("Error fetch cart:", error);
+                console.error("Error fetching cart:", error);
             }
         },
 
-        async updateCart(item) {
+        async changeQuantity(productId, delta) {
+            const item = this.cart.find(i => i.productId === productId);
+            if (!item) return;
+
+            const newQuantity = item.quantity + delta;
+            if (newQuantity < 1) return; // Prevent negative values
+
             try {
-                await axios.post("/Cart/updat", {
-                    ProductId: item.ProductId,
-                    Quantity: item.Quantity
+                await axios.post("/Cart/update", {
+                    productId: productId,
+                    delta: delta
                 });
                 await this.loadCart();
             }
@@ -71,11 +86,14 @@ export const CartPage = {
 
         async removeFromCart(productId) {
             try {
-                await axios.post("/Cart/remove", productId);
+                await axios.post("/Cart/remove", productId, {
+                    headers: { "Content-Type": "application/json" }
+                });
+
                 await this.loadCart();
             }
             catch (error) {
-                console.error("Error removing from cart:" + error);
+                console.error("Error removing from cart:", error);
             }
         }
     }

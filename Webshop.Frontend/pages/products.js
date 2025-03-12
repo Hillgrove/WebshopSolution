@@ -12,7 +12,14 @@ export const ProductsPage = {
                             <p class="card-text fw-bold">{{ product.price }} kr.</p>
                         </div>
                         <div class="card-footer text-center">
-                            <button class="btn btn-primary" @click="addToCart(product)">Add to basket</button>
+
+                        <div v-if="cart.some(item => item.productId === product.id)" class="btn-group">
+                            <button class="btn btn-outline-secondary" @click="changeQuantity(product.id, -1)">-</button>
+                            <span class="mx-2">{{ cart.find(item => item.productId === product.id).quantity }}</span>
+                            <button class="btn btn-outline-secondary" @click="changeQuantity(product.id, 1)">+</button>
+                        </div>
+                        <button v-else class="btn btn-primary" @click="addToCart(product.id)">Add to Cart</button>
+
                         </div>
                     </div>
                 </div>
@@ -23,7 +30,8 @@ export const ProductsPage = {
     data() {
         return {
             // product: { id, name: "", Quantity,  price},
-            products: []
+            products: [],
+            cart: []
         };
     },
 
@@ -38,21 +46,38 @@ export const ProductsPage = {
     },
 
     methods: {
-        async addToCart(product) {
+        async loadCart() {
             try {
-                await axios.post("/Cart/add", {
-                    ProductId: product.id,
-                    ProductName: product.name,
-                    Quantity: 1,
-                    PriceInOere: product.price * 100
+                const response = await axios.get("/Cart");
+                this.cart = response.data;
+            }
+            catch (error) {
+                console.error("Error fetching cart:", error);
+            }
+        },
+
+        async addToCart(productId) {
+            try {
+                await axios.post("/Cart/add", productId, {
+                    headers: { "Content-Type": "application/json" }
                 });
-                alert("Product added to cart!");
+
+                await this.loadCart();
+                // alert("Product added to cart!");
             }
             catch (error) {
                 console.error("Error adding product to cart:" + error);
             }
+        },
 
+        async changeQuantity(productId, delta) {
+            try {
+                await axios.post("/Cart/update", { productId, delta });
+                await this.loadCart();
+            }
+            catch (error) {
+                console.error("Error updating cart:", error);
+            }
         }
-
     }
 };
