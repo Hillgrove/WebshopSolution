@@ -36,8 +36,6 @@
 
             await _next(context);
 
-            Console.WriteLine($"[{context.TraceIdentifier}] ResponseHeaderMiddleware - Final Content-Type: {context.Response.ContentType}");
-
             if (!headers.ContainsKey("Content-Type"))
             {
                 headers.Append("Content-Type", "application/json; charset=utf-8");

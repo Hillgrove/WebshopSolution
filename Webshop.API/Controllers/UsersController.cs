@@ -129,8 +129,8 @@ namespace Webshop.API.Controllers
             }
 
             // Store user session
+            HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
             HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
-
 
             return Ok(new { message = result.Message });
         }
@@ -148,7 +148,16 @@ namespace Webshop.API.Controllers
             }
             
             HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
-            //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+                                         //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+
+            // Invalidate session cookie
+            Response.Cookies.Append("__Host-WebshopSession", "", new CookieOptions
+            {
+                Expires = DateTime.UtcNow.AddDays(-1), // Expire immediately
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
 
             return Ok(new { message = "Logged out" });
         }

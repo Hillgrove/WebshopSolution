@@ -67,7 +67,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetInt32(3) / 100m  // Convert from øre to kroner
+                    Price = reader.GetInt32(3) / 100  // Convert from øre to kroner
                 };
 
                 products.Add(product);
@@ -92,7 +92,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetDecimal(3) / 100m  // Convert from øre to kroner
+                    Price = (long)(reader.GetDecimal(3) / 100)  // Convert from øre to kroner
                 };
             }
 

@@ -59,10 +59,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 
     // Defines session expiration policies
-    options.Cookie.MaxAge = TimeSpan.FromHours(1);  // Allows session persistence even after browser restart
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Automatically expires session after inactivity
+    options.Cookie.MaxAge = TimeSpan.FromMinutes(30);  // Allows session persistence even after browser restart
+    options.IdleTimeout = TimeSpan.FromMinutes(15);  // Automatically expires session after inactivity
 });
-
 
 // ASVS: 14.4.5 - Verify that a Strict-Transport-Security (HSTS) header  is included on all responses
 //                and for all subdomains
@@ -80,7 +79,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowSpecificOrigin",
                       policy =>
                       {
-                          policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://webshop.hillgrove.dk")
+                          policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://localhost:7016", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader()
                                 .AllowCredentials();
