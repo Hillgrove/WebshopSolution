@@ -46,6 +46,23 @@ if (window.location.hostname === "localhost") {
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
+// ============================
+// Section: Function to Check Login Status
+// ============================
+export async function checkLoginStatus() {
+    try {
+        const response = await axios.get("/Users/me"); // Check if session is active
+        localStorage.setItem("userEmail", response.data.email); // Cache email
+        window.dispatchEvent(new CustomEvent("auth-changed", { detail: true}));
+        return true;
+    } catch (error) {
+        localStorage.removeItem("userEmail"); // Clear cache if session is inactive
+        window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+        return false;
+    }
+}
+
+
 /// ============================
 // Section: FingerprintJS Initialization
 // ============================

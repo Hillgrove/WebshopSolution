@@ -85,6 +85,7 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
+                    window.dispatchEvent(new CustomEvent("auth-changed", { detail: true }));
                     // Redirect to home page
                     this.$router.push("/");
                 }

@@ -1,3 +1,5 @@
+import { checkLoginStatus } from "./index.js";
+
 export function createLayoutComponent() {
     return {
         template: `
@@ -20,12 +22,15 @@ export function createLayoutComponent() {
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/cart">Cart</router-link>
                                 </li>
-                                <li class="nav-item">
-                                    <router-link class="btn btn-success" to="/login">Log In</router-link>
-                                </li>
-                                <li class="nav-item">
+
+                                <!-- Show logout if logged in, otherwise show login -->
+                                <li v-if="isLoggedIn" class="nav-item">
                                     <button @click="logoutUser" class="btn btn-danger">Log Out</button>
                                 </li>
+                                <li v-else class="nav-item">
+                                    <router-link class="btn btn-success" to="/login">Log In</router-link>
+                                </li>
+
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/change-password">Change Password</router-link>
                                 </li>
@@ -37,21 +42,50 @@ export function createLayoutComponent() {
             </div>
         `,
 
-        setup() {
-            const logoutUser = async () => {
+        data() {
+            return {
+                isLoggedIn: false
+            };
+        },
+
+        async mounted() {
+            this.isLoggedIn = await checkLoginStatus();
+            window.addEventListener("auth-changed", (event) => {
+                this.isLoggedIn = event.detail
+            });
+        },
+
+        methods: {
+            async logoutUser() {
                 try {
                     await axios.post("/Users/logout");
-                    localStorage.clear();
-                    setTimeout(() => {
-                        window.location.href = "/#/login";
-                        location.reload();
-                    }, 500);
-                } catch (error) {
-                    console.error("Logout failed", error);
+                localStorage.clear();
+                this.isLoggedIn = false;
+                window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+                window.location.href = "/#/login"
                 }
-            };
+                catch (error) {
+                    console.error("Logout failed", error)
+                }
 
-            return { logoutUser };
+            }
         }
+
+        // setup() {
+        //     const logoutUser = async () => {
+        //         try {
+        //             await axios.post("/Users/logout");
+        //             localStorage.clear();
+        //             setTimeout(() => {
+        //                 window.location.href = "/#/login";
+        //                 location.reload();
+        //             }, 500);
+        //         } catch (error) {
+        //             console.error("Logout failed", error);
+        //         }
+        //     };
+
+        //     return { logoutUser };
+        // }
     };
 }
