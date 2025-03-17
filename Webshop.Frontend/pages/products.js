@@ -13,10 +13,14 @@ export const ProductsPage = {
                         </div>
                         <div class="card-footer text-center">
 
-                        <div v-if="cart.some(item => item.productId === product.id)" class="btn-group">
+                        <div v-if="cart.some(item => item.productId === product.id)">
+
                             <button class="btn btn-outline-secondary" @click="changeQuantity(product.id, -1)">-</button>
+
                             <span class="mx-2">{{ cart.find(item => item.productId === product.id).quantity }}</span>
+
                             <button class="btn btn-outline-secondary" @click="changeQuantity(product.id, 1)">+</button>
+
                         </div>
                         <button v-else class="btn btn-primary" @click="addToCart(product.id)">Add to Cart</button>
 
@@ -29,7 +33,6 @@ export const ProductsPage = {
 
     data() {
         return {
-            // product: { id, name: "", Quantity,  price},
             products: [],
             cart: []
         };
@@ -39,6 +42,7 @@ export const ProductsPage = {
         try {
             const response = await axios.get("/Products");
             this.products = response.data;
+            await this.loadCart();
         }
         catch (error) {
             console.error("Error fetching products:", error);
