@@ -25,7 +25,8 @@ export const CartPage = {
                                 <div class="d-flex justify-content-center align-items-center">
 
                                     <button class="btn btn-outline-secondary btn-sm"
-                                        @click="changeQuantity(item.productId, -1)">-</button>
+                                        @click="changeQuantity(item.productId, -1)"
+                                        :disabled="item.quantity <= 1">-</button>
 
                                     <span class="mx-2">{{ item.quantity }}</span>
 
@@ -71,7 +72,7 @@ export const CartPage = {
             if (!item) return;
 
             const newQuantity = item.quantity + delta;
-            if (newQuantity < 0) return; // Prevent negative values
+            if (newQuantity < 1) return; // Prevent negative values
 
             try {
                 await axios.post("/Cart/update", {
