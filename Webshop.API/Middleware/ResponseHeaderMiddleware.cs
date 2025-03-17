@@ -11,8 +11,6 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            Console.WriteLine($"[{context.TraceIdentifier}] ResponseHeaderMiddleware - Processing response.");
-
             var headers = context.Response.Headers;
 
             // Add X-Content-Type-Options header
