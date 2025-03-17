@@ -14,10 +14,17 @@ namespace Webshop.API.Controllers
     {
         private const string SessionkeyCart = "ShoppingCart";
         private readonly IProductRepository _productRepository;
+        private readonly OrderRepositorySQLite _orderRepository;
+        private readonly IUserRepository _userRepository;
 
-        public CartController(IProductRepository productRepository)
+        public CartController(
+            IProductRepository productRepository, 
+            OrderRepositorySQLite orderRepository, 
+            IUserRepository userRepository)
         {
             _productRepository = productRepository;
+            _orderRepository = orderRepository;
+            _userRepository = userRepository;
         }
 
 
@@ -82,6 +89,7 @@ namespace Webshop.API.Controllers
 
 
         [HttpPost("remove")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult RemoveFromCart([FromBody] int productId)
         {
             var cart = GetCart();
@@ -92,63 +100,60 @@ namespace Webshop.API.Controllers
 
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetCartItems()
         {
             return Ok(GetCart());
         }
 
 
-        //[HttpPost("checkout")]
-        //public async Task<IActionResult> Checkout()
-        //{
-        //    var cart = GetCart();
-        //    if (!cart.Any()) return BadRequest("Cart is empty.");
+        [HttpPost("checkout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Checkout()
+        {
+            var cart = GetCart();
+            if (cart.Count == 0) return BadRequest("Cart is empty.");
 
-        //    decimal totalPrice = 0;
-        //    var validatedItems = new List<OrderItem>();
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (string.IsNullOrEmpty(userEmail))
+            {
+                return Unauthorized("User not logged in.");
+            }
 
-        //    foreach (var cartItem in cart)
-        //    {
-        //        var product = await _productRepository.GetByIdAsync(cartItem.ProductId);
-        //        if (product == null) continue; // Skip missing products
+            var user = await _userRepository.GetUserByEmailAsync(userEmail);
+            if (user == null)
+            {
+                return Unauthorized("User not found");
+            }
 
-        //        int finalPrice = (int)(product.Price * 100); // Backend-verified price
-        //        totalPrice += finalPrice * cartItem.Quantity;
+            int totalPriceInOere = cart.Sum(item => item.Quantity * item.PriceInOere);
 
-        //        validatedItems.Add(new OrderItem
-        //        {
-        //            ProductId = product.Id,
-        //            ProductName = product.Name,
-        //            Quantity = cartItem.Quantity,
-        //            PriceInOere = finalPrice
-        //        });
-        //    }
+            var order = new Order
+            {
+                UserId = user.Id,
+                Items = cart.Select(item => new OrderItem
+                {
+                    ProductId = item.ProductId,
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    PriceInOere = item.PriceInOere
+                }).ToList(),
+                TotalPriceInOere = totalPriceInOere
+            };
 
-        //    var order = new Order
-        //    {
-        //        Items = validatedItems,
-        //        TotalPrice = totalPrice,
-        //        CreatedAt = DateTime.UtcNow
-        //    };
+            await _orderRepository.SaveAsync(order);
 
-        //    await _orderRepository.SaveAsync(order);
+            HttpContext.Session.Remove("ShoppingCart"); // Clear cart after purchase
 
-        //    HttpContext.Session.Remove("ShoppingCart"); // Clear cart after purchase
-
-        //    return Ok(new { message = "Order placed successfully", total = totalPrice / 100.0m });
-        //}
+            return Ok(new { message = "Order placed successfully", total = totalPriceInOere });
+        }
 
 
         #region Private Methods
         private List<CartItem> GetCart()
         {
-            // TODO: redundant maybe? why create a session if there are no changes? 
-            if (HttpContext.Session.IsAvailable == false)
-            {
-                var newCart = JsonSerializer.Serialize(new List<CartItem>());
-                HttpContext.Session.SetString(SessionkeyCart, newCart);
-            }
-
             var jsonCart = HttpContext.Session.GetString(SessionkeyCart);
 
             if (jsonCart == null)
