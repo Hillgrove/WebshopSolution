@@ -16,22 +16,19 @@ namespace Webshop.API.Controllers
         private readonly IUserRepository _userRepository;
         private readonly PasswordService _passwordService;
         private readonly ValidationService _validationService;
-        private readonly RateLimitingService _rateLimitingService;
 
         public UsersController(
             UserService userService,
             EmailService emailService,
             IUserRepository repository,
             PasswordService passwordService,
-            ValidationService validationService,
-            RateLimitingService rateLimitingService)
+            ValidationService validationService)
         {
             _userService = userService;
             _emailService = emailService;
             _userRepository = repository;
             _passwordService = passwordService;
             _validationService = validationService;
-            _rateLimitingService = rateLimitingService;
         }
 
         // TODO: remove when done testing as it exposes all hashed passwords
