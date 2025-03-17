@@ -9,26 +9,47 @@ namespace Webshop.Data
 {
     public class ShoppingcartRepositoryDict
     {
-        public class ShoppingCartRepositoryDict
+        private readonly Dictionary<string, Dictionary<int, (Product Product, int Quantity)>> userCarts = new();
+
+        // Fetch all products in the cart for a specific user
+        public Task<Dictionary<int, (Product Product, int Quantity)>> GetAllAsync(string userEmail)
         {
-            private readonly Dictionary<int, (Product Product, int Quantity)> cart = new();
-
-            public ShoppingCartRepositoryDict() { }
-
-            public void AddProduct(Product product, int quantity = 1)
+            if (!userCarts.ContainsKey(userEmail))
             {
-                if (cart.ContainsKey(product.Id))
-                {
-                    cart[product.Id] = (product, cart[product.Id].Quantity + quantity);
-                }
-                else
-                {
-                    cart[product.Id] = (product, quantity);
-                }
+                return Task.FromResult(new Dictionary<int, (Product Product, int Quantity)>());
+            }
+            return Task.FromResult(new Dictionary<int, (Product Product, int Quantity)>(userCarts[userEmail]));
+        }
+
+        // Add product to a user's cart
+        public async Task AddProductAsync(string userEmail, Product product, int quantity = 1)
+        {
+            if (!userCarts.ContainsKey(userEmail))
+            {
+                userCarts[userEmail] = new Dictionary<int, (Product Product, int Quantity)>();
             }
 
-            public async Task RemoveProductAsync(Product product, int quantity)
+            var cart = userCarts[userEmail];
+
+            if (cart.ContainsKey(product.Id))
             {
+                cart[product.Id] = (product, cart[product.Id].Quantity + quantity);
+            }
+            else
+            {
+                cart[product.Id] = (product, quantity);
+            }
+
+            await Task.CompletedTask;
+        }
+
+        // Remove product from a user's cart
+        public async Task RemoveProductAsync(string userEmail, Product product, int quantity)
+        {
+            if (userCarts.ContainsKey(userEmail))
+            {
+                var cart = userCarts[userEmail];
+
                 if (cart.ContainsKey(product.Id))
                 {
                     if (cart[product.Id].Quantity > quantity)
@@ -40,15 +61,20 @@ namespace Webshop.Data
                         cart.Remove(product.Id); // Remove the product if quantity becomes 0 or less
                     }
                 }
-                await Task.CompletedTask;
             }
-
-            public async Task<decimal> GetTotalPriceAsync()
-            {
-                decimal totalPrice = cart.Sum(item => item.Value.Product.Price * item.Value.Quantity);
-                return await Task.FromResult(totalPrice);
-            }
+            await Task.CompletedTask;
         }
 
+        // Get the total price of the cart for a user
+        public async Task<decimal> GetTotalPriceAsync(string userEmail)
+        {
+            if (!userCarts.ContainsKey(userEmail))
+            {
+                return await Task.FromResult(0m);
+            }
+
+            decimal totalPrice = userCarts[userEmail].Sum(item => item.Value.Product.Price * item.Value.Quantity);
+            return await Task.FromResult(totalPrice);
+        }
     }
 }

@@ -13,7 +13,10 @@ namespace Webshop.Data
         private int _nextId = 1;
         private readonly List<Product> _products = new();
 
-        public ProductRepositoryList() { }
+        public ProductRepositoryList()
+        {
+            AddAsync(new Product { Id = _nextId, Name = "name", Description = "", Price = 2, CreatedAt = new DateTime(2025, 3, 17, 14, 30, 0)});
+        }
 
         public Task<IEnumerable<Product>> GetAllAsync()
         {
