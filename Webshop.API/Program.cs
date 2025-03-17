@@ -33,6 +33,7 @@ builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
+builder.Services.AddScoped<OrderRepositorySQLite>(provider => new OrderRepositorySQLite(connectionString));
 
 // ASVS: 3.2.3 - Store session tokens securely using HttpOnly and Secure cookies
 builder.Services.AddSession(options =>
