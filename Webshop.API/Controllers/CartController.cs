@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Webshop.API.Extensions;
+using System.Text.Json;
 using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Shared.DTOs;
@@ -134,13 +134,28 @@ namespace Webshop.API.Controllers
         #region Private Methods
         private List<CartItem> GetCart()
         {
-            var cart = HttpContext.Session.GetObjectFromJson<List<CartItem>>(SessionkeyCart);
+            // TODO: redundant maybe? why create a session if there are no changes? 
+            if (HttpContext.Session.IsAvailable == false)
+            {
+                var newCart = JsonSerializer.Serialize(new List<CartItem>());
+                HttpContext.Session.SetString(SessionkeyCart, newCart);
+            }
+
+            var jsonCart = HttpContext.Session.GetString(SessionkeyCart);
+
+            if (jsonCart == null)
+            {
+                return new List<CartItem>();
+            }
+
+            var cart = JsonSerializer.Deserialize<List<CartItem>>(jsonCart);
+
             return cart ?? new List<CartItem>();
         }
 
         private void SaveCart(List<CartItem> cart)
         {
-            HttpContext.Session.SetObjectAsJson(SessionkeyCart, cart);
+            HttpContext.Session.SetString(SessionkeyCart, JsonSerializer.Serialize(cart));
         }
         #endregion
     }
