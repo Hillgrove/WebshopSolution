@@ -48,7 +48,7 @@ namespace Webshop.API.Controllers
                     ProductId = product.Id,
                     ProductName = product.Name,
                     Quantity = 1,
-                    PriceInOere = (int)(product.Price * 100)
+                    PriceInOere = product.PriceInOere
                 });
             }
 

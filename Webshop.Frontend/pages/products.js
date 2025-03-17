@@ -9,7 +9,8 @@ export const ProductsPage = {
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text text-muted">{{ product.category }}</p>
                             <p class="card-text">{{ product.description }}</p>
-                            <p class="card-text fw-bold">{{ product.price }} kr.</p>
+                            <p class="card-text fw-bold">{{ (product.priceInOere / 100).toFixed(2) }} kr.</p>
+
                         </div>
                         <div class="card-footer text-center">
 

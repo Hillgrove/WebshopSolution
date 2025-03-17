@@ -9,9 +9,9 @@ namespace Webshop.Data
 
         public ProductRepositoryList()
         {
-            _products.Add(new Product { Id = _nextId++, Name = "Product A", Description = "Product A description", Price = 111 });
-            _products.Add(new Product { Id = _nextId++, Name = "Product B", Description = "Product B description", Price = 222 });
-            _products.Add(new Product { Id = _nextId++, Name = "Product C", Description = "Product C description", Price = 333 });
+            _products.Add(new Product { Id = _nextId++, Name = "Product A", Description = "Product A description", PriceInOere = 1111 });
+            _products.Add(new Product { Id = _nextId++, Name = "Product B", Description = "Product B description", PriceInOere = 2222 });
+            _products.Add(new Product { Id = _nextId++, Name = "Product C", Description = "Product C description", PriceInOere = 3333 });
         }
 
         public Task<IEnumerable<Product>> GetAllAsync()
