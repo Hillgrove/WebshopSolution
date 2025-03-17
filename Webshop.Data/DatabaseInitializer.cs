@@ -38,8 +38,9 @@ namespace Webshop.Data
             ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             OrderID INTEGER NOT NULL,
             ProductID INTEGER NOT NULL,
+            ProductName TEXT NOT NULL,
             Quantity INTEGER NOT NULL CHECK (Quantity > 0),
-            PriceAtPurchaseInOere INTEGER NOT NULL CHECK (PriceAtPurchaseInOere >= 0),
+            PriceAtPurchaseInOere INTEGER NOT NULL DEFAULT 0 CHECK (PriceAtPurchaseInOere >= 0),
             FOREIGN KEY (OrderID) REFERENCES Orders(ID) ON DELETE CASCADE,
             FOREIGN KEY (ProductID) REFERENCES Products(ID) ON DELETE SET NULL
         );";
@@ -74,13 +75,13 @@ namespace Webshop.Data
             }
         }
 
-        private async Task ExecuteTableCreation(SQLiteConnection connection, string sql)
+        private static async Task ExecuteTableCreation(SQLiteConnection connection, string sql)
         {
             using var command = new SQLiteCommand(sql, connection);
             await command.ExecuteNonQueryAsync();
         }
 
-        private async Task SeedProductsIfEmpty(SQLiteConnection connection)
+        private static async Task SeedProductsIfEmpty(SQLiteConnection connection)
         {
             using var countCommand = new SQLiteCommand("SELECT COUNT(*) FROM Products", connection);
             var count = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
