@@ -35,13 +35,22 @@ namespace Webshop.API.Controllers
                 return NotFound("Product not found.");
             }
 
-            cart.Add(new CartItem
+            var existingItem = cart.FirstOrDefault(i => i.ProductId == productId);
+            if (existingItem != null)
             {
-                ProductId = product.Id,
-                ProductName = product.Name,
-                Quantity = 1,
-                PriceInOere = (int)(product.Price * 100)
-            });
+                existingItem.Quantity++;
+            }
+
+            else
+            {
+                cart.Add(new CartItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Quantity = 1,
+                    PriceInOere = (int)(product.Price * 100)
+                });
+            }
 
             SaveCart(cart);
             return Ok(cart);
@@ -128,7 +137,6 @@ namespace Webshop.API.Controllers
 
         //    return Ok(new { message = "Order placed successfully", total = totalPrice / 100.0m });
         //}
-
 
 
         #region Private Methods
