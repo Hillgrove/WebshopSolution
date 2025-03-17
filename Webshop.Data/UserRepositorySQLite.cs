@@ -129,7 +129,8 @@ namespace Webshop.Data
         {
             using var connection = new SQLiteConnection(_connectionString);
             await connection.OpenAsync();
-
+            
+            // TODO: add transactions to all db changes?
             var command = new SQLiteCommand(connection)
             {
                 CommandText = @"
