@@ -42,6 +42,12 @@ export const CartPage = {
                         </tr>
                     </tbody>
                 </table>
+
+                <!-- Total Price -->
+                <div class="text-end mt-3">
+                    <h4>Total Price: {{ totalPrice.toFixed(2) }} kr.</h4>
+                </div
+
             </div>
         </div>
     `,
@@ -54,6 +60,12 @@ export const CartPage = {
 
     async mounted() {
         await this.loadCart();
+    },
+
+    computed: {
+        totalPrice() {
+            return this.cart.reduce((sum, item) => sum + (item.quantity * item.priceInOere), 0) / 100;
+        }
     },
 
     methods: {
