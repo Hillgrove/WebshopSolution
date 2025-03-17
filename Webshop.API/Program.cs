@@ -31,8 +31,6 @@ builder.Services.AddTransient<HashingService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
-//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-//builder.Services.AddSingleton<IProductRepository, ProductRepositoryList>();
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
 
@@ -89,22 +87,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Initialize databases asynchronously
-using (var scope = app.Services.CreateScope())
-{
-    var serviceProvider = scope.ServiceProvider;
-    var userRepo = serviceProvider.GetRequiredService<IUserRepository>();
-    var productRepo = serviceProvider.GetRequiredService<IProductRepository>();
-
-    if (userRepo is UserRepositorySQLite userRepositorySQLite)
-    {
-        await userRepositorySQLite.InitializeDatabase();
-    }
-
-    if (productRepo is ProductRepositorySQLite productRepositorySQLite)
-    {
-        await productRepositorySQLite.InitializeDatabase();
-    }
-}
+var databaseInitializer = new DatabaseInitializer(connectionString);
+await databaseInitializer.InitializeDatabase();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

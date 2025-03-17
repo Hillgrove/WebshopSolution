@@ -13,28 +13,6 @@ namespace Webshop.Data
             _connectionString = connectionString;
         }
 
-        public async Task InitializeDatabase()
-        {
-            using var connection = new SQLiteConnection(_connectionString);
-            await connection.OpenAsync();
-
-            // TODO: If more tables/entities are added, move this to a separate DatabaseInitializer class.
-            var command = new SQLiteCommand(connection)
-            {
-                CommandText = @"
-                    CREATE TABLE IF NOT EXISTS Users (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Email TEXT NOT NULL UNIQUE,
-                        PasswordHash TEXT NOT NULL,
-                        CreatedAt DATETIME NOT NULL,
-                        PasswordResetToken TEXT,
-                        PasswordResetTokenExpiration DATETIME
-                    )"
-            };
-
-            await command.ExecuteNonQueryAsync();
-        }
-
         public async Task<User> AddAsync(User newUser)
         {
             using var connection = new SQLiteConnection(_connectionString);
