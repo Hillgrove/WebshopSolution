@@ -79,9 +79,9 @@ namespace Webshop.API.Controllers
                 return BadRequest("Object is null or ID mismatch.");
             }
 
-            Product? updatedProduct = await _productRepository.UpdateAsync(product);
+            await _productRepository.UpdateAsync(product);
 
-            if (updatedProduct == null)
+            if (product == null)
             {
                 return NotFound($"Product with ID {id} not found.");
             }
@@ -99,7 +99,7 @@ namespace Webshop.API.Controllers
         {
             if (id != null)
             {
-                Product product = await _productRepository.GetByIdAsync(id);
+                Product? product = await _productRepository.GetByIdAsync(id);
                 if (product.Id == 0)
                 {
                     return NotFound($"Product with ID {id} not found.");
