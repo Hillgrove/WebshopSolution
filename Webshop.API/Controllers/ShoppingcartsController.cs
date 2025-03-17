@@ -39,7 +39,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<ShoppingcartsController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ProductDto productDto)
+        public async Task<IActionResult> Post([FromBody] ProductDto product)
         {
             if (productDto == null || productDto.Quantity <= 0)
             {
