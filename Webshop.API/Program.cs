@@ -26,9 +26,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddTransient<UserService>();
-builder.Services.AddTransient<ProductService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
+builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();

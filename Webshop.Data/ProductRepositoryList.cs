@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Webshop.Data.Models;
+﻿using Webshop.Data.Models;
 
 namespace Webshop.Data
 {
@@ -15,7 +9,7 @@ namespace Webshop.Data
 
         public ProductRepositoryList()
         {
-            AddAsync(new Product { Id = _nextId, Name = "name", Description = "", Price = 2, CreatedAt = new DateTime(2025, 3, 17, 14, 30, 0)});
+            AddAsync(new Product { Id = _nextId++, Name = "Product Name", Description = "Product Description", Price = 2, CreatedAt = new DateTime(2025, 3, 17, 14, 30, 0)});
         }
 
         public Task<IEnumerable<Product>> GetAllAsync()
@@ -25,7 +19,7 @@ namespace Webshop.Data
 
         public Task<Product?> GetByIdAsync(int id)
         {
-            return Task.FromResult(_products.FirstOrDefault(u => u.Id == id));
+            return Task.FromResult(_products.FirstOrDefault(p => p.Id == id));
         }
 
         public Task<Product> AddAsync(Product newProduct)
@@ -37,7 +31,7 @@ namespace Webshop.Data
 
         public Task UpdateAsync(Product product)
         {
-            var existingProduct = _products.FirstOrDefault(u => u.Id == product.Id);
+            var existingProduct = _products.FirstOrDefault(p => p.Id == product.Id);
             if (existingProduct != null)
             {
                 existingProduct.Name = product.Name;
@@ -47,17 +41,15 @@ namespace Webshop.Data
             return Task.CompletedTask;
         }
 
-        public Task<Product> Delete(Product x)
+        public Task<Product?> Delete(Product productToDelete)
         {
-            Product? product = _products.FirstOrDefault(u => u.Id == x.Id);
-            if (product is null)
+            Product? deletedProduct = _products.FirstOrDefault(p => p.Id == productToDelete.Id);
+            if (deletedProduct is null)
             {
-                return null;
+                return Task.FromResult<Product?>(null);
             }
-            _products.Remove(product);
-            //_products.SaveChanges();
-            return Task.FromResult(product);
+            _products.Remove(deletedProduct);
+            return Task.FromResult<Product?>(deletedProduct);
         }
-
     }
 }
