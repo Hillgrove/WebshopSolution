@@ -31,7 +31,13 @@
                 return;
             }
 
-            if (string.IsNullOrEmpty(contentType) || !_allowedContentTypes.Contains(contentType))
+            if (context.Request.Method == "POST" && context.Request.ContentLength == 0)
+            {   
+                // Allow POST request without body
+                // TODO: Double check if this is best practice
+            }
+
+            else if (string.IsNullOrEmpty(contentType) || !_allowedContentTypes.Contains(contentType))
             {
                 context.Response.StatusCode = contentType == "" ? 415 : 406; // 415 if no Content-Type, 406 if unsupported type
                 context.Response.ContentType = "text/plain"; // Optional, could also be application/json or others

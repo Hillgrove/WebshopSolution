@@ -11,6 +11,7 @@ import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { ProductsPage } from "./pages/products.js";
 import { createLayoutComponent } from "./layoutComponent.js";
 import { CartPage } from "./pages/cart.js";
+import { OrderConfirmationPage } from "./pages/orderConfirmation.js";
 
 
 // ============================
@@ -25,7 +26,8 @@ const routes = [
     { path: "/forgot-password", component: ForgotPasswordPage },
     { path: "/reset-password", component: ResetPasswordPage },
     { path: "/products", component: ProductsPage },
-    { path: "/cart", component: CartPage }
+    { path: "/cart", component: CartPage },
+    { path: "/order-confirmation", component: OrderConfirmationPage }
 ];
 
 
