@@ -38,7 +38,7 @@ namespace Webshop.Data
             {
                 existingProduct.Name = product.Name;
                 existingProduct.Description = product.Description;
-                existingProduct.Price = product.Price;
+                existingProduct.PriceInOere = product.PriceInOere;
             }
             return Task.CompletedTask;
         }

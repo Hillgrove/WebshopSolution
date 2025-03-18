@@ -73,7 +73,7 @@ namespace Webshop.Data
                 return await Task.FromResult(0m);
             }
 
-            decimal totalPrice = userCarts[userEmail].Sum(item => item.Value.Product.Price * item.Value.Quantity);
+            decimal totalPrice = userCarts[userEmail].Sum(item => item.Value.Product.PriceInOere * item.Value.Quantity);
             return await Task.FromResult(totalPrice);
         }
     }

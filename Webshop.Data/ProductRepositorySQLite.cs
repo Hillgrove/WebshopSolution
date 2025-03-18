@@ -31,7 +31,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    PriceInOere = reader.GetInt32(3)
+                    PriceInOere = reader.GetInt32(3),
                     // TODO: set in db or backend?
                     CreatedAt = reader.GetDateTime(4),
                 };
@@ -58,7 +58,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    PriceInOere = reader.GetInt32(3)
+                    PriceInOere = reader.GetInt32(3),
                     CreatedAt = reader.GetDateTime(4),
                 };
             }
@@ -82,7 +82,7 @@ namespace Webshop.Data
 
             insertCommand.Parameters.AddWithValue("@Name", newProduct.Name);
             insertCommand.Parameters.AddWithValue("@Description", newProduct.Description);
-            insertCommand.Parameters.AddWithValue("@Price", newProduct.Price);
+            insertCommand.Parameters.AddWithValue("@Price", newProduct.PriceInOere);
             insertCommand.Parameters.AddWithValue("@CreatedAt", newProduct.CreatedAt);
 
             newProduct.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
@@ -104,7 +104,7 @@ namespace Webshop.Data
 
             command.Parameters.AddWithValue("@Name", product.Name);
             command.Parameters.AddWithValue("@PasswordHash", product.Description);
-            command.Parameters.AddWithValue("@PasswordHash", product.Price);
+            command.Parameters.AddWithValue("@PasswordHash", product.PriceInOere);
             command.Parameters.AddWithValue("@CreatedAt", product.CreatedAt);
             command.Parameters.AddWithValue("@Id", product.Id);
 
