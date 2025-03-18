@@ -164,11 +164,13 @@ namespace Webshop.Services
             return new ResultDto { Success = true, Message = "If this email exists in our system, you will receive a password reset email." };
         }
 
-        public async Task<ResultDto> ChangePasswordAsync(string email, ChangePasswordDto changePasswordDto)
+        public async Task<ResultDto> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto)
         {
-            // TODO: refactor all places that validates password to exract to privat method?
+            // TODO: refactor all places that validates password to extract to privat method?
+            var user = await _userRepository.GetByIdAsync(userId)
+                ?? throw new InvalidOperationException("User should never be null here.");
 
-            if (!await VerifyUserCredentialsAsync(email, changePasswordDto.OldPassword))
+            if (!await VerifyUserCredentialsAsync(user.Email, changePasswordDto.OldPassword))
             {
                 return new ResultDto { Success = false, Message = "You have entered an invalid username or password" };
             }
@@ -188,8 +190,7 @@ namespace Webshop.Services
                 return new ResultDto { Success = false, Message = "This password has been found in data breaches. Please choose another." };
             }
 
-            var user = await _userRepository.GetUserByEmailAsync(email);
-            user!.PasswordHash = _hashingService.GenerateHash(changePasswordDto.NewPassword);
+            user.PasswordHash = _hashingService.GenerateHash(changePasswordDto.NewPassword);
             await _userRepository.UpdateAsync(user);
 
             return new ResultDto { Success = true, Message = "Password successfully changed" };

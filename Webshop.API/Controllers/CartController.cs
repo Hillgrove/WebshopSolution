@@ -116,13 +116,13 @@ namespace Webshop.API.Controllers
             var cart = GetCart();
             if (cart.Count == 0) return BadRequest("Cart is empty.");
 
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
                 return Unauthorized("User not logged in.");
             }
 
-            var user = await _userRepository.GetUserByEmailAsync(userEmail);
+            var user = await _userRepository.GetByIdAsync(userId.Value);
             if (user == null)
             {
                 return Unauthorized("User not found");
