@@ -28,10 +28,13 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
+builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
+builder.Services.AddSingleton<ProductRepositoryList, ProductRepositoryList>();
+
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 
 // ASVS: 3.2.3 - Store session tokens securely using HttpOnly and Secure cookies
