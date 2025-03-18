@@ -46,7 +46,7 @@ export const CartPage = {
                 <!-- Total Price -->
                 <div class="text-end mt-3">
                     <h4>Total Price: {{ totalPrice.toFixed(2) }} kr.</h4>
-                </div
+                </div>
 
             </div>
         </div>

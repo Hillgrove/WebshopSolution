@@ -31,9 +31,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    PriceInOere = reader.GetInt32(3),
-                    // TODO: set in db or backend?
-                    CreatedAt = reader.GetDateTime(4),
+                    PriceInOere = reader.GetInt32(3)
                 };
 
                 products.Add(product);
@@ -58,8 +56,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    PriceInOere = reader.GetInt32(3),
-                    CreatedAt = reader.GetDateTime(4),
+                    PriceInOere = reader.GetInt32(3)
                 };
             }
             
@@ -75,15 +72,14 @@ namespace Webshop.Data
             var insertCommand = new SQLiteCommand(connection)
             {
                 CommandText = @"
-                    INSERT INTO Products (Name, Description, Price, CreatedAt)
-                    VALUES (@Name, @Description, @Price, @CreatedAt);
+                    INSERT INTO Products (Name, Description, Price)
+                    VALUES (@Name, @Description, @Price);
                     SELECT last_insert_rowid()"
             };
 
             insertCommand.Parameters.AddWithValue("@Name", newProduct.Name);
             insertCommand.Parameters.AddWithValue("@Description", newProduct.Description);
             insertCommand.Parameters.AddWithValue("@Price", newProduct.PriceInOere);
-            insertCommand.Parameters.AddWithValue("@CreatedAt", newProduct.CreatedAt);
 
             newProduct.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
             return newProduct;
@@ -98,14 +94,13 @@ namespace Webshop.Data
             {
                 CommandText = @"
                     UPDATE Products
-                    SET Name = @Name, Description = @Description, Price = @Price, CreatedAt = @CreatedAt,
+                    SET Name = @Name, Description = @Description, Price = @Price
                     WHERE Id = @Id"
             };
 
             command.Parameters.AddWithValue("@Name", product.Name);
             command.Parameters.AddWithValue("@PasswordHash", product.Description);
             command.Parameters.AddWithValue("@PasswordHash", product.PriceInOere);
-            command.Parameters.AddWithValue("@CreatedAt", product.CreatedAt);
             command.Parameters.AddWithValue("@Id", product.Id);
 
             await command.ExecuteNonQueryAsync();

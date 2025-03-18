@@ -8,6 +8,5 @@
         public DateTime CreatedAt { get; internal set; } = DateTime.UtcNow;
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpiration { get; set; }
-        public Shoppingcart? Shoppingcart { get; set; } = new Shoppingcart();
     }
 }
