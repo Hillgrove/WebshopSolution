@@ -1,4 +1,3 @@
-import { checkLoginStatus } from "../index.js";
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -27,14 +26,6 @@ export const LoginPage = {
                                     <input class="form-control" type="password" v-model="loginData.password" id="password" required minlength="8" maxlength="64">
                                     <label class="form-label" for="password">Password</label>
                                 </div>
-
-                                <!-- Remember me -->
-                                <!-- <div class="mb-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="" id="remember" checked>
-                                        <label class="form-check-label" for="remember">Remember me</label>
-                                    </div>
-                                </div>-->
 
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
@@ -93,22 +84,8 @@ export const LoginPage = {
                     visitorId
                 });
 
-                console.log("Response Headers:", response.headers); // DEBUG: Log full headers
-
-                // Retrieve CSRF token from response header (not cookies)
-                const csrfToken = response.headers["x-csrf-token"];
-                if (csrfToken) {
-                    console.log("CSRF Token Retrieved:", csrfToken);
-                    document.cookie = `csrf-token=${csrfToken}; path=/; Secure; SameSite=None`; // Store in cookie manually
-                } else {
-                    console.error("CSRF token missing in response headers!");
-                }
-
                 if (response.status === 200) {
-                    setTimeout(async () => {
-                        await checkLoginStatus();
-                    }, 500); // Ensure session is properly stored before checking login status
-
+                    window.dispatchEvent(new CustomEvent("auth-changed", { detail: true }));
                     // Redirect to home page
                     this.$router.push("/");
                 }

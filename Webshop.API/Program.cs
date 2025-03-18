@@ -32,11 +32,10 @@ builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
-//builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-builder.Services.AddSingleton<IProductRepository, ProductRepositoryList>();
 
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
+builder.Services.AddScoped<OrderRepositorySQLite>(provider => new OrderRepositorySQLite(connectionString));
 
 // ASVS: 3.2.3 - Store session tokens securely using HttpOnly and Secure cookies
 builder.Services.AddSession(options =>
@@ -61,10 +60,9 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 
     // Defines session expiration policies
-    options.Cookie.MaxAge = TimeSpan.FromHours(1);  // Allows session persistence even after browser restart
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Automatically expires session after inactivity
+    options.Cookie.MaxAge = TimeSpan.FromMinutes(30);  // Allows session persistence even after browser restart
+    options.IdleTimeout = TimeSpan.FromMinutes(15);  // Automatically expires session after inactivity
 });
-
 
 // ASVS: 14.4.5 - Verify that a Strict-Transport-Security (HSTS) header  is included on all responses
 //                and for all subdomains
@@ -82,33 +80,18 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowSpecificOrigin",
                       policy =>
                       {
-                          policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://webshop.hillgrove.dk")
+                          policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://localhost:7016", "https://webshop.hillgrove.dk")
                                 .WithMethods("GET", "POST", "OPTIONS")
                                 .AllowAnyHeader()
-                                .AllowCredentials()
-                                .WithExposedHeaders("X-CSRF-Token"); // Allow frontend to read this header
+                                .AllowCredentials();
                       });
 });
 
 var app = builder.Build();
 
 // Initialize databases asynchronously
-using (var scope = app.Services.CreateScope())
-{
-    var serviceProvider = scope.ServiceProvider;
-    var userRepo = serviceProvider.GetRequiredService<IUserRepository>();
-    var productRepo = serviceProvider.GetRequiredService<IProductRepository>();
-
-    if (userRepo is UserRepositorySQLite userRepositorySQLite)
-    {
-        await userRepositorySQLite.InitializeDatabase();
-    }
-
-    if (productRepo is ProductRepositorySQLite productRepositorySQLite)
-    {
-        await productRepositorySQLite.InitializeDatabase();
-    }
-}
+var databaseInitializer = new DatabaseInitializer(connectionString);
+await databaseInitializer.InitializeDatabase();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -129,11 +112,11 @@ app.UseSession();
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
+// ASVS: 13.2.3 - Protect RESTful services from CSRF using origin request headers
+app.UseMiddleware<OriginValidationMiddleware>();
+
 // Content-Type validation of request headers (ASVS 13.1.5)
 app.UseMiddleware<RequestHeaderMiddleware>();
-
-// ASVS: 13.2.3 - Protect RESTful services from CSRF using the Double Submit Cookie Pattern
-app.UseMiddleware<CsrfMiddleware>();
 
 // ASVS: 14.4.1 - Ensure Content-Type is Set Correctly
 // ASVS: 14.4.3 - Enforce Content-Security-Policy headers (CSP)

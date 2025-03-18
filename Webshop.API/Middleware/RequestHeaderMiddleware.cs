@@ -12,7 +12,6 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
-            Console.WriteLine($"[{context.TraceIdentifier}] RequestHeaderMiddleware - Method: {context.Request.Method}, Path: {context.Request.Path}");
 
             var contentType = context.Request.Headers.ContentType.ToString().ToLower();
 

@@ -10,6 +10,7 @@ import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
 import { ProductsPage } from "./pages/products.js";
 import { createLayoutComponent } from "./layoutComponent.js";
+import { CartPage } from "./pages/cart.js";
 
 
 // ============================
@@ -23,7 +24,8 @@ const routes = [
     { path: "/change-password", component: ChangePasswordPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
     { path: "/reset-password", component: ResetPasswordPage },
-    { path: "/products", component: ProductsPage }
+    { path: "/products", component: ProductsPage },
+    { path: "/cart", component: CartPage }
 ];
 
 
@@ -41,60 +43,24 @@ if (window.location.hostname === "localhost") {
     axios.defaults.baseURL = prodBaseURL;
 }
 
-
-
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
-// Section: Global State for Login
+// Section: Function to Check Login Status
 // ============================
-export const globalState = Vue.reactive({
-    isLoggedIn: false
-});
-
-// Function to check login status
 export async function checkLoginStatus() {
     try {
-        const response = await axios.get("/Users/me");
-        globalState.isLoggedIn = response.status === 200;
-    } catch {
-        globalState.isLoggedIn = false;
+        const response = await axios.get("/Users/me"); // Check if session is active
+        localStorage.setItem("userEmail", response.data.email); // Cache email
+        window.dispatchEvent(new CustomEvent("auth-changed", { detail: true}));
+        return true;
+    } catch (error) {
+        localStorage.removeItem("userEmail"); // Clear cache if session is inactive
+        window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+        return false;
     }
 }
-
-
-// ============================
-// Section: Axios Interceptors
-// ============================
-axios.interceptors.response.use(
-    response => response, // Pass-through success responses
-    async error => {
-        if (error.response?.status === 401) {
-            globalState.isLoggedIn = false;
-        }
-        return Promise.reject(error);
-    }
-);
-
-axios.interceptors.request.use(config => {
-    const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrf-token='))
-        ?.split('=')[1]; // Extract CSRF token from cookies
-
-    if (csrfToken) {
-        console.log("Adding CSRF Token to request:", csrfToken);
-        config.headers["X-CSRF-Token"] = csrfToken;
-    } else {
-        console.warn("No CSRF Token found in cookies!");
-    }
-
-    return config;
-}, error => {
-    return Promise.reject(error);
-});
-
 
 
 /// ============================
@@ -118,7 +84,7 @@ export async function initializeVisitorId() {
 
 // Call once at startup after FingerprintJS is initialized
 window.fpPromise.then(() => {
-    initializeVisitorId().then(() => checkLoginStatus());
+    initializeVisitorId();
 });
 
 
@@ -130,29 +96,18 @@ const router = VueRouter.createRouter({
     routes
 });
 
-// Ensure login status is checked after each navigation
-router.afterEach(() => {
-    checkLoginStatus();
-});
-
 
 // ============================
 // Section: Vue App Initialization
 // ============================
 const app = Vue.createApp({
-    template: `<layout-component></layout-component>`,
-    setup() {
-        return { globalState };
-    }
+    template: `<layout-component></layout-component>`
 });
 
 // Dynamically create and register the layout component
-app.component("layout-component", createLayoutComponent(globalState));
+app.component("layout-component", createLayoutComponent());
 
 app.use(router);
 app.mount("#app");
-
-// Ensure login status is checked when the page loads
-// window.addEventListener("load", checkLoginStatus);
 
 console.log("Vue app initialized");

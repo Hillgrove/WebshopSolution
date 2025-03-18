@@ -8,47 +8,10 @@ namespace Webshop.Data
     {
         private readonly string _connectionString;
 
+        
         public ProductRepositorySQLite(string connectionString)
         {
             _connectionString = connectionString;
-        }
-
-        public async Task InitializeDatabase()
-        {
-            using var connection = new SQLiteConnection(_connectionString);
-            await connection.OpenAsync();
-
-            var createTableCommand = new SQLiteCommand(connection)
-            {
-                CommandText = @"
-                    CREATE TABLE IF NOT EXISTS Products (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Name TEXT NOT NULL,
-                        Description TEXT NOT NULL,
-                        PriceInOere INTEGER NOT NULL DEFAULT 0,
-                        CreatedAt DATETIME NOT NULL
-                    )"
-            };
-
-            await createTableCommand.ExecuteNonQueryAsync();
-
-            // Check if table is empty
-            var countCommand = new SQLiteCommand("SELECT COUNT(*) FROM Products", connection);
-            var count = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
-
-            if (count == 0) // Only insert if table is empty
-            {
-                var insertCommand = new SQLiteCommand(connection)
-                {
-                    CommandText = @"
-                INSERT INTO Products (Name, Description, PriceInOere) VALUES
-                ('Produkt A', 'Beskrivelse af produkt A', 1999),
-                ('Produkt B', 'Beskrivelse af produkt B', 2999),
-                ('Produkt C', 'Beskrivelse af produkt C', 1499);"
-                };
-
-                await insertCommand.ExecuteNonQueryAsync();
-            }
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
@@ -68,7 +31,8 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetInt32(3) / 100m  // Convert from øre to kroner
+                    PriceInOere = reader.GetInt32(3)
+                    // TODO: set in db or backend?
                     CreatedAt = reader.GetDateTime(4),
                 };
 
@@ -94,10 +58,11 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetDecimal(3) / 100m  // Convert from øre to kroner
+                    PriceInOere = reader.GetInt32(3)
                     CreatedAt = reader.GetDateTime(4),
                 };
             }
+            
             return null;
         }
 

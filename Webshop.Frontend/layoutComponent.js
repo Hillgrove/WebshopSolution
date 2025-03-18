@@ -1,6 +1,6 @@
 import { checkLoginStatus } from "./index.js";
 
-export function createLayoutComponent(globalState) {
+export function createLayoutComponent() {
     return {
         template: `
             <div class="container">
@@ -20,9 +20,17 @@ export function createLayoutComponent(globalState) {
                                     <router-link class="nav-link" to="/products">Products</router-link>
                                 </li>
                                 <li class="nav-item">
-                                    <button @click="logoutUser" v-if="isLoggedIn" class="btn btn-danger">Log Out</button>
-                                    <router-link class="btn btn-success" to="/login" v-else>Log In</router-link>
+                                    <router-link class="nav-link" to="/cart">Cart</router-link>
                                 </li>
+
+                                <!-- Show logout if logged in, otherwise show login -->
+                                <li v-if="isLoggedIn" class="nav-item">
+                                    <button @click="logoutUser" class="btn btn-danger">Log Out</button>
+                                </li>
+                                <li v-else class="nav-item">
+                                    <router-link class="btn btn-success" to="/login">Log In</router-link>
+                                </li>
+
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/change-password">Change Password</router-link>
                                 </li>
@@ -34,37 +42,50 @@ export function createLayoutComponent(globalState) {
             </div>
         `,
 
-        setup() {
-            const isLoggedIn = Vue.computed(() => globalState.isLoggedIn);
+        data() {
+            return {
+                isLoggedIn: false
+            };
+        },
 
-            const logoutUser = async () => {
+        async mounted() {
+            this.isLoggedIn = await checkLoginStatus();
+            window.addEventListener("auth-changed", (event) => {
+                this.isLoggedIn = event.detail
+            });
+        },
+
+        methods: {
+            async logoutUser() {
                 try {
                     await axios.post("/Users/logout");
-
-                    // Preserve visitorId but clear session-related data
-                    const visitorId = localStorage.getItem("visitorId");
-
-                    localStorage.clear(); // Clear everything else
-                    if (visitorId) {
-                        localStorage.setItem("visitorId", visitorId); // Restore visitorId
-                    }
-
-                    // Remove frontend CSRF cookie manually
-                    document.cookie = "csrf-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; SameSite=None";
-
-
-                    // Redirect and refresh to get a new CSRF token
-                    setTimeout(() => {
-                        window.location.href = "/#/login"; // Redirect to login page
-                        location.reload(); // Force a full page reload to reset session
-                    }, 500);
+                localStorage.clear();
+                this.isLoggedIn = false;
+                window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+                window.location.href = "/#/login"
                 }
                 catch (error) {
-                    console.error("Logout failed", error);
+                    console.error("Logout failed", error)
                 }
-            };
 
-            return { isLoggedIn, logoutUser };
+            }
         }
+
+        // setup() {
+        //     const logoutUser = async () => {
+        //         try {
+        //             await axios.post("/Users/logout");
+        //             localStorage.clear();
+        //             setTimeout(() => {
+        //                 window.location.href = "/#/login";
+        //                 location.reload();
+        //             }, 500);
+        //         } catch (error) {
+        //             console.error("Logout failed", error);
+        //         }
+        //     };
+
+        //     return { logoutUser };
+        // }
     };
 }

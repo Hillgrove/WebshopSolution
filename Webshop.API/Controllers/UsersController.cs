@@ -16,22 +16,19 @@ namespace Webshop.API.Controllers
         private readonly IUserRepository _userRepository;
         private readonly PasswordService _passwordService;
         private readonly ValidationService _validationService;
-        private readonly RateLimitingService _rateLimitingService;
 
         public UsersController(
             UserService userService,
             EmailService emailService,
             IUserRepository repository,
             PasswordService passwordService,
-            ValidationService validationService,
-            RateLimitingService rateLimitingService)
+            ValidationService validationService)
         {
             _userService = userService;
             _emailService = emailService;
             _userRepository = repository;
             _passwordService = passwordService;
             _validationService = validationService;
-            _rateLimitingService = rateLimitingService;
         }
 
         // TODO: remove when done testing as it exposes all hashed passwords
@@ -128,32 +125,11 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
-
-            // ASVS: 3.2.1 - Generate a new session token on authentication
-            // Generate CSRF token
-            var csrfToken = Guid.NewGuid().ToString();
-
-            // Log token before setting
-            Console.WriteLine($"Setting CSRF Cookie: {csrfToken}");
-
-            HttpContext.Response.Cookies.Append("csrf-token", csrfToken, new CookieOptions
-            {
-                HttpOnly = false,                   // Allow frontend to read the token
-                Secure = true,                      // HTTPS only. Required for "SameSite=None"
-                SameSite = SameSiteMode.None,       // Allows sending CSRF cookie across different domains
-                Path = "/"                         // Available across all endpoints
-            });
-
-            // Also send the CSRF token in a response header
-            HttpContext.Response.Headers.Append("Access-Control-Expose-Headers", "X-CSRF-Token");
-            HttpContext.Response.Headers["X-CSRF-Token"] = csrfToken;
-
             // Store user session
+            HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
             HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
-            //HttpContext.Session.SetString("CsrfToken", csrfToken);
 
-
-            return Ok(new { message = result.Message, csrfToken });
+            return Ok(new { message = result.Message });
         }
 
         // POST api/<UsersController>/logout
@@ -169,16 +145,15 @@ namespace Webshop.API.Controllers
             }
             
             HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
-            //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+                                         //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
 
-            // Clear CSRF token by setting an expired cookie
-            HttpContext.Response.Cookies.Append("csrf-token", "", new CookieOptions
+            // Invalidate session cookie
+            Response.Cookies.Append("__Host-WebshopSession", "", new CookieOptions
             {
+                Expires = DateTime.UtcNow.AddDays(-1), // Expire immediately
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.None,
-                Path = "/",
-                Expires = DateTime.UtcNow.AddDays(-1) // Expire the cookie immediately
+                SameSite = SameSiteMode.None
             });
 
             return Ok(new { message = "Logged out" });
