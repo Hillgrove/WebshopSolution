@@ -28,11 +28,13 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
+builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-//builder.Services.AddSingleton<IProductRepository, ProductRepositoryList>();
+builder.Services.AddSingleton<IProductRepository, ProductRepositoryList>();
+
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
 
