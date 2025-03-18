@@ -72,14 +72,14 @@ namespace Webshop.Data
             var insertCommand = new SQLiteCommand(connection)
             {
                 CommandText = @"
-                    INSERT INTO Products (Name, Description, Price)
-                    VALUES (@Name, @Description, @Price);
+                    INSERT INTO Products (Name, Description, PriceInOere)
+                    VALUES (@Name, @Description, @PriceInOere);
                     SELECT last_insert_rowid()"
             };
 
             insertCommand.Parameters.AddWithValue("@Name", newProduct.Name);
             insertCommand.Parameters.AddWithValue("@Description", newProduct.Description);
-            insertCommand.Parameters.AddWithValue("@Price", newProduct.PriceInOere);
+            insertCommand.Parameters.AddWithValue("@PriceInOere", newProduct.PriceInOere);
 
             newProduct.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
             return newProduct;
@@ -94,13 +94,13 @@ namespace Webshop.Data
             {
                 CommandText = @"
                     UPDATE Products
-                    SET Name = @Name, Description = @Description, Price = @Price
+                    SET Name = @Name, Description = @Description, PriceInOere = @PriceInOere
                     WHERE Id = @Id"
             };
 
             command.Parameters.AddWithValue("@Name", product.Name);
-            command.Parameters.AddWithValue("@PasswordHash", product.Description);
-            command.Parameters.AddWithValue("@PasswordHash", product.PriceInOere);
+            command.Parameters.AddWithValue("@Description", product.Description);
+            command.Parameters.AddWithValue("@PriceInOere", product.PriceInOere);
             command.Parameters.AddWithValue("@Id", product.Id);
 
             await command.ExecuteNonQueryAsync();
