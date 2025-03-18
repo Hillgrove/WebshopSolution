@@ -33,9 +33,10 @@ builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
 //builder.Services.AddSingleton<IUserRepository, UserRepositoryList>();
-builder.Services.AddSingleton<ProductRepositoryList, ProductRepositoryList>();
+builder.Services.AddSingleton<IProductRepository, ProductRepositoryList>();
 
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
+builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
 
 // ASVS: 3.2.3 - Store session tokens securely using HttpOnly and Secure cookies
 builder.Services.AddSession(options =>
@@ -90,6 +91,24 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Initialize databases asynchronously
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    var userRepo = serviceProvider.GetRequiredService<IUserRepository>();
+    var productRepo = serviceProvider.GetRequiredService<IProductRepository>();
+
+    if (userRepo is UserRepositorySQLite userRepositorySQLite)
+    {
+        await userRepositorySQLite.InitializeDatabase();
+    }
+
+    if (productRepo is ProductRepositorySQLite productRepositorySQLite)
+    {
+        await productRepositorySQLite.InitializeDatabase();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

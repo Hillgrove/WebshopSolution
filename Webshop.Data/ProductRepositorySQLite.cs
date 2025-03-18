@@ -1,4 +1,4 @@
-﻿using System.Data.SQLite;
+using System.Data.SQLite;
 using Webshop.Data.Models;
 
 namespace Webshop.Data
@@ -11,28 +11,44 @@ namespace Webshop.Data
         public ProductRepositorySQLite(string connectionString)
         {
             _connectionString = connectionString;
-            InitializeDatabase();
         }
 
-        private void InitializeDatabase()
+        public async Task InitializeDatabase()
         {
             using var connection = new SQLiteConnection(_connectionString);
-            connection.Open();
+            await connection.OpenAsync();
 
-            // TODO: If more tables/entities are added, move this to a separate DatabaseInitializer class.
-            var command = new SQLiteCommand(connection)
+            var createTableCommand = new SQLiteCommand(connection)
             {
                 CommandText = @"
-                CREATE TABLE IF NOT EXISTS Products (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Name TEXT NOT NULL UNIQUE,
-                    Description TEXT NOT NULL,
-                    Price INTEGER NOT NULL,
-                    CreatedAt DATETIME NOT NULL,
-                )"
+                    CREATE TABLE IF NOT EXISTS Products (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Name TEXT NOT NULL,
+                        Description TEXT NOT NULL,
+                        PriceInOere INTEGER NOT NULL DEFAULT 0,
+                        CreatedAt DATETIME NOT NULL
+                    )"
             };
 
-            command.ExecuteNonQuery();
+            await createTableCommand.ExecuteNonQueryAsync();
+
+            // Check if table is empty
+            var countCommand = new SQLiteCommand("SELECT COUNT(*) FROM Products", connection);
+            var count = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
+
+            if (count == 0) // Only insert if table is empty
+            {
+                var insertCommand = new SQLiteCommand(connection)
+                {
+                    CommandText = @"
+                INSERT INTO Products (Name, Description, PriceInOere) VALUES
+                ('Produkt A', 'Beskrivelse af produkt A', 1999),
+                ('Produkt B', 'Beskrivelse af produkt B', 2999),
+                ('Produkt C', 'Beskrivelse af produkt C', 1499);"
+                };
+
+                await insertCommand.ExecuteNonQueryAsync();
+            }
         }
 
         public async Task<IEnumerable<Product>> GetAllAsync()
@@ -43,7 +59,7 @@ namespace Webshop.Data
             await connection.OpenAsync();
 
             var command = new SQLiteCommand("SELECT * FROM Products", connection);
-            using var reader = command.ExecuteReader();
+            using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
             {
@@ -52,12 +68,13 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetInt32(3),
+                    Price = reader.GetInt32(3) / 100m  // Convert from øre to kroner
                     CreatedAt = reader.GetDateTime(4),
                 };
 
                 products.Add(product);
             }
+
             return products;
         }
 
@@ -77,7 +94,7 @@ namespace Webshop.Data
                     Id = reader.GetInt32(0),
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
-                    Price = reader.GetInt32(3),
+                    Price = reader.GetDecimal(3) / 100m  // Convert from øre to kroner
                     CreatedAt = reader.GetDateTime(4),
                 };
             }

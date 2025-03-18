@@ -8,6 +8,7 @@ import { AboutPage } from "./pages/about.js";
 import { ChangePasswordPage } from "./pages/changePassword.js";
 import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
+import { ProductsPage } from "./pages/products.js";
 import { createLayoutComponent } from "./layoutComponent.js";
 
 
@@ -21,15 +22,26 @@ const routes = [
     { path: "/about", component: AboutPage },
     { path: "/change-password", component: ChangePasswordPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
-    { path: "/reset-password", component: ResetPasswordPage }
+    { path: "/reset-password", component: ResetPasswordPage },
+    { path: "/products", component: ProductsPage }
 ];
 
 
 // ============================
 // Section: Axios Configuration
 // ============================
-// axios.defaults.baseURL = "https://localhost:7016/api";
-axios.defaults.baseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+const devBaseURL = "https://localhost:7016/api";
+const prodBaseURL = "https://sikkersoftwarewebshop.azurewebsites.net/api";
+
+if (window.location.hostname === "localhost") {
+    console.log("Using development base URL:", devBaseURL);
+    axios.defaults.baseURL = devBaseURL;
+} else {
+    console.log("Using production base URL");
+    axios.defaults.baseURL = prodBaseURL;
+}
+
+
 
 axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 

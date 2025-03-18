@@ -1,23 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+
 using Webshop.Data.Models;
 using Webshop.Data;
 using Webshop.Services;
+
 
 namespace Webshop.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
-    {
-        private readonly ProductRepositoryList _productRepository;
+    {        
+        private readonly IProductRepository _productRepository;
         private readonly ProductService _productService;
 
-        public ProductsController(ProductRepositoryList repo, ProductService service)
+        public ProductsController(IProductRepository productRepository, ProductService productService)
         {
-            _productRepository = repo;
-            _productService = service;
+            _productRepository = productRepository;
+            _productService = productService;
         }
-
 
         // GET: api/<ProductsController>
         [HttpGet]
@@ -35,15 +36,14 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Product>> Get(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
+            Product? foundProduct = await _productRepository.GetByIdAsync(id);
+            if (foundProduct == null)
             {
                 return NotFound();
             }
 
-            return Ok(product);
+            return Ok(foundProduct);
         }
-
 
         //// POST api/<ProductsController>
         //[ProducesResponseType(StatusCodes.Status201Created)]
