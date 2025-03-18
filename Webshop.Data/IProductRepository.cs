@@ -1,4 +1,4 @@
-﻿using Webshop.Data.Models;
+using Webshop.Data.Models;
 
 namespace Webshop.Data
 {

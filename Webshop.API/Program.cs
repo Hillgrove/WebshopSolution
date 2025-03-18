@@ -28,9 +28,11 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
+builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
+
 builder.Services.AddScoped<IUserRepository>(provider => new UserRepositorySQLite(connectionString));
 builder.Services.AddScoped<IProductRepository>(provider => new ProductRepositorySQLite(connectionString));
 builder.Services.AddScoped<OrderRepositorySQLite>(provider => new OrderRepositorySQLite(connectionString));
