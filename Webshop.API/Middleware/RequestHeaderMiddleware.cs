@@ -17,8 +17,11 @@
 
             var path = context.Request.Path.ToString().ToLower();
 
-            // Skip Content-Type validation for logout
-            if (path == "/api/users/logout")
+            // Skip Content-Type validation for valid bodyless POST endpoints
+            if (context.Request.Method == "POST" && 
+                context.Request.ContentType == null && 
+                context.Request.ContentLength == 0 &&
+                path == "/api/users/logout" || path == "/api/checkout")
             {
                 await _next(context);
                 return;
@@ -29,12 +32,6 @@
             {
                 await _next(context);
                 return;
-            }
-
-            if (context.Request.Method == "POST" && context.Request.ContentLength == 0)
-            {   
-                // Allow POST request without body
-                // TODO: Double check if this is best practice
             }
 
             else if (string.IsNullOrEmpty(contentType) || !_allowedContentTypes.Contains(contentType))
