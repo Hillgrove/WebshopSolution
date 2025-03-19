@@ -12,6 +12,7 @@ import { ProductsPage } from "./pages/products.js";
 import { createLayoutComponent } from "./layoutComponent.js";
 import { CartPage } from "./pages/cart.js";
 import { OrderConfirmationPage } from "./pages/orderConfirmation.js";
+import { OrderHistoryPage } from "./pages/orderHistory.js";
 
 
 // ============================
@@ -27,7 +28,8 @@ const routes = [
     { path: "/reset-password", component: ResetPasswordPage },
     { path: "/products", component: ProductsPage },
     { path: "/cart", component: CartPage },
-    { path: "/order-confirmation", component: OrderConfirmationPage }
+    { path: "/order-confirmation", component: OrderConfirmationPage },
+    { path: "/orders", component: OrderHistoryPage },
 ];
 
 
@@ -54,11 +56,11 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 export async function checkLoginStatus() {
     try {
         const response = await axios.get("/Users/me"); // Check if session is active
-        localStorage.setItem("userEmail", response.data.email); // Cache email
+        // localStorage.setItem("userId", response.data.email); // Cache userId
         window.dispatchEvent(new CustomEvent("auth-changed", { detail: true}));
         return true;
     } catch (error) {
-        localStorage.removeItem("userEmail"); // Clear cache if session is inactive
+        // localStorage.removeItem("userId"); // Clear cache if session is inactive
         window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
         return false;
     }
