@@ -34,13 +34,20 @@ namespace Webshop.Data
                 insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
 
-                newUser.Id = Convert.ToInt32(await insertCommand.ExecuteScalarAsync());
+                var result = await insertCommand.ExecuteScalarAsync();
+                if (result == null)
+                {
+                    throw new Exception("Database operation failed: No ID was returned.");
+                }
+
+                newUser.Id = Convert.ToInt32(result);
 
                 await transaction.CommitAsync();
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+                throw new Exception("Failed to insert user", ex);
             }
             
             return newUser;
