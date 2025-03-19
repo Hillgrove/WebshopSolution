@@ -1,9 +1,8 @@
 ﻿namespace Webshop.Shared.DTOs
 {
-    public class CartUpdateDto
+    public class AddToCartDto
     {
         public int ProductId { get; set; }
-        public int Delta { get; set; } // +X or -X
+        public int Quantity { get; set; } = 1;
     }
-
 }

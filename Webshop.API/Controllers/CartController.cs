@@ -30,22 +30,28 @@ namespace Webshop.API.Controllers
 
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> AddToCart([FromBody] int productId)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartDto dto)
         {
+            if (dto.Quantity < 1)
+            {
+                return BadRequest("Quantity must be at least 1.");
+            }
+
             var cart = GetCart();
 
             // Fetch product details from DB
-            var product = await _productRepository.GetByIdAsync(productId);
+            var product = await _productRepository.GetByIdAsync(dto.ProductId);
             if (product == null)
             {
                 return NotFound("Product not found.");
             }
 
-            var existingItem = cart.FirstOrDefault(i => i.ProductId == productId);
+            var existingItem = cart.FirstOrDefault(i => i.ProductId == dto.ProductId);
             if (existingItem != null)
             {
-                existingItem.Quantity++;
+                existingItem.Quantity += dto.Quantity;
             }
 
             else
@@ -54,7 +60,7 @@ namespace Webshop.API.Controllers
                 {
                     ProductId = product.Id,
                     ProductName = product.Name,
-                    Quantity = 1,
+                    Quantity = dto.Quantity,
                     PriceInOere = product.PriceInOere
                 });
             }
@@ -64,13 +70,13 @@ namespace Webshop.API.Controllers
         }
 
 
-        [HttpPost("update")]
+        [HttpPut("{productId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult UpdateCartItem([FromBody] CartUpdateDto updateDto)
+        public IActionResult UpdateCartItem(int productId, [FromBody] CartUpdateDto updateDto)
         {
             var cart = GetCart();
-            var item = cart.FirstOrDefault(i => i.ProductId == updateDto.ProductId);
+            var item = cart.FirstOrDefault(i => i.ProductId == productId);
 
             if (item == null)
             {
@@ -88,9 +94,9 @@ namespace Webshop.API.Controllers
         }
 
 
-        [HttpPost("remove")]
+        [HttpDelete("{productId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult RemoveFromCart([FromBody] int productId)
+        public IActionResult RemoveFromCart(int productId)
         {
             var cart = GetCart();
             cart.RemoveAll(p => p.ProductId == productId);
@@ -138,7 +144,7 @@ namespace Webshop.API.Controllers
                     ProductId = item.ProductId,
                     ProductName = item.ProductName,
                     Quantity = item.Quantity,
-                    PriceInOere = item.PriceInOere
+                    PriceAtPurchaseInOere = item.PriceInOere
                 }).ToList(),
                 TotalPriceInOere = totalPriceInOere
             };
@@ -156,13 +162,12 @@ namespace Webshop.API.Controllers
         {
             var jsonCart = HttpContext.Session.GetString(SessionkeyCart);
 
-            if (jsonCart == null)
+            if (string.IsNullOrEmpty(jsonCart))
             {
                 return new List<CartItem>();
             }
 
             var cart = JsonSerializer.Deserialize<List<CartItem>>(jsonCart);
-
             return cart ?? new List<CartItem>();
         }
 
