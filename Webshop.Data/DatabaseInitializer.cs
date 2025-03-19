@@ -37,7 +37,7 @@ namespace Webshop.Data
         CREATE TABLE IF NOT EXISTS OrderItems (
             ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             OrderID INTEGER NOT NULL,
-            ProductID INTEGER NOT NULL,
+            ProductID INTEGER,
             ProductName TEXT NOT NULL,
             Quantity INTEGER NOT NULL CHECK (Quantity > 0),
             PriceAtPurchaseInOere INTEGER NOT NULL DEFAULT 0 CHECK (PriceAtPurchaseInOere >= 0),

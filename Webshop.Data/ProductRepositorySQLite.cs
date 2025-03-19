@@ -32,8 +32,6 @@ namespace Webshop.Data
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
                     PriceInOere = reader.GetInt32(3)
-                    // TODO: set in db or backend?
-                    CreatedAt = reader.GetDateTime(4),
                 };
 
                 products.Add(product);
@@ -59,7 +57,6 @@ namespace Webshop.Data
                     Name = reader.GetString(1),
                     Description = reader.GetString(2),
                     PriceInOere = reader.GetInt32(3)
-                    CreatedAt = reader.GetDateTime(4),
                 };
             }
             
@@ -75,17 +72,22 @@ namespace Webshop.Data
             var insertCommand = new SQLiteCommand(connection)
             {
                 CommandText = @"
-                    INSERT INTO Products (Name, Description, Price, CreatedAt)
-                    VALUES (@Name, @Description, @Price, @CreatedAt);
+                    INSERT INTO Products (Name, Description, PriceInOere)
+                    VALUES (@Name, @Description, @PriceInOere);
                     SELECT last_insert_rowid()"
             };
 
             insertCommand.Parameters.AddWithValue("@Name", newProduct.Name);
             insertCommand.Parameters.AddWithValue("@Description", newProduct.Description);
-            insertCommand.Parameters.AddWithValue("@Price", newProduct.Price);
-            insertCommand.Parameters.AddWithValue("@CreatedAt", newProduct.CreatedAt);
+            insertCommand.Parameters.AddWithValue("@PriceInOere", newProduct.PriceInOere);
 
-            newProduct.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
+            var result = await insertCommand.ExecuteScalarAsync();
+            if (result == null)
+            {
+                throw new Exception("Database operation failed: No ID was returned.");
+            }
+
+            newProduct.Id = Convert.ToInt32(result);
             return newProduct;
         }
 
@@ -98,14 +100,13 @@ namespace Webshop.Data
             {
                 CommandText = @"
                     UPDATE Products
-                    SET Name = @Name, Description = @Description, Price = @Price, CreatedAt = @CreatedAt,
+                    SET Name = @Name, Description = @Description, PriceInOere = @PriceInOere
                     WHERE Id = @Id"
             };
 
             command.Parameters.AddWithValue("@Name", product.Name);
-            command.Parameters.AddWithValue("@PasswordHash", product.Description);
-            command.Parameters.AddWithValue("@PasswordHash", product.Price);
-            command.Parameters.AddWithValue("@CreatedAt", product.CreatedAt);
+            command.Parameters.AddWithValue("@Description", product.Description);
+            command.Parameters.AddWithValue("@PriceInOere", product.PriceInOere);
             command.Parameters.AddWithValue("@Id", product.Id);
 
             await command.ExecuteNonQueryAsync();
