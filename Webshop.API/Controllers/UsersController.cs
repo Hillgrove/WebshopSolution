@@ -31,24 +31,15 @@ namespace Webshop.API.Controllers
             _validationService = validationService;
         }
 
-        // TODO: remove when done testing as it exposes all hashed passwords
-        // GET: api/<UsersController>
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
-        {
-            IEnumerable<User> users = await _userRepository.GetAllAsync();
-            return Ok(users);
-        }
-
+        // GET: api/<UsersController>/5
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<UserDto>> Get(int id)
         {
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
                 return Unauthorized("User not logged in.");
             }
@@ -67,15 +58,17 @@ namespace Webshop.API.Controllers
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult GetCurrentUser()
+        public async Task<ActionResult> GetCurrentUser()
         {
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
                 return Unauthorized("User not logged in.");
             }
 
-            return Ok(new { email = userEmail });
+            var user = await _userRepository.GetByIdAsync(userId.Value)
+                ?? throw new InvalidOperationException("User should never be null here.");
+            return Ok(new { email = user.Email });
         }
 
         // POST api/<UsersController>/register
@@ -126,8 +119,10 @@ namespace Webshop.API.Controllers
             }
 
             // Store user session
+            var user = await _userRepository.GetUserByEmailAsync(userAuthDto.Email)
+                ?? throw new InvalidOperationException("User should never be null here.");
             HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
-            HttpContext.Session.SetString("UserEmail", userAuthDto.Email);
+            HttpContext.Session.SetInt32("UserId", user.Id);
 
             return Ok(new { message = result.Message });
         }
@@ -138,14 +133,14 @@ namespace Webshop.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult Logout()
         {
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
                 return Unauthorized("User not logged in.");
             }
             
             HttpContext.Session.Clear(); // Use if you want to remove all session data, including cart info
-                                         //HttpContext.Session.Remove("UserEmail"); // use if you only want to remove your auth token
+            //HttpContext.Session.Remove("UserId"); // use if you only want to remove your auth token
 
             // Invalidate session cookie
             Response.Cookies.Append("__Host-WebshopSession", "", new CookieOptions
@@ -226,13 +221,13 @@ namespace Webshop.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            if (string.IsNullOrEmpty(userEmail))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
             {
                 return Unauthorized("User not logged in.");
             }
 
-            var result = await _userService.ChangePasswordAsync(userEmail, changePasswordDto);
+            var result = await _userService.ChangePasswordAsync(userId.Value, changePasswordDto);
             if (!result.Success)
             {
                 return BadRequest(result.Message);

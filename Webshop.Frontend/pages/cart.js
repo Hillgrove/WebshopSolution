@@ -46,6 +46,7 @@ export const CartPage = {
                 <!-- Total Price -->
                 <div class="text-end mt-3">
                     <h4>Total Price: {{ totalPrice.toFixed(2) }} kr.</h4>
+                    <button class="btn btn-success mt-3" @click="checkout">Checkout</button>
                 </div>
 
             </div>
@@ -87,10 +88,7 @@ export const CartPage = {
             if (newQuantity < 1) return; // Prevent negative values
 
             try {
-                await axios.post("/Cart/update", {
-                    productId: productId,
-                    delta: delta
-                });
+                await axios.put(`/Cart/${productId}`, { delta: delta });
                 await this.loadCart();
             }
             catch (error) {
@@ -100,14 +98,32 @@ export const CartPage = {
 
         async removeFromCart(productId) {
             try {
-                await axios.post("/Cart/remove", productId, {
-                    headers: { "Content-Type": "application/json" }
-                });
-
+                await axios.delete(`/Cart/${productId}`);
                 await this.loadCart();
             }
             catch (error) {
                 console.error("Error removing from cart:", error);
+            }
+        },
+
+        async checkout() {
+            try {
+                const response = await axios.post("/Cart/checkout");
+                localStorage.setItem("lastOrderTotal", response.data.total);
+                this.cart = [];
+                this.$router.push("/order-confirmation");
+            }
+            catch (error) {
+                if (error.response && error.response.status === 401) {
+                    alert("You must be logged in to checkout.");
+                }
+                else if (error.response && error.response.status === 400) {
+                    alert("Your cart is empty.");
+                }
+                else {
+                    console.error("Checkout error:", error);
+                    alert("Checkout failed.");
+                }
             }
         }
     }

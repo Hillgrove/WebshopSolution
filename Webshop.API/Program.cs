@@ -28,7 +28,6 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<UserService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddTransient<HashingService>();
-builder.Services.AddTransient<ProductService>();
 builder.Services.AddHttpClient<PasswordService>();
 builder.Services.AddTransient<ValidationService>();
 builder.Services.AddSingleton<RateLimitingService>();
@@ -81,7 +80,7 @@ builder.Services.AddCors(options =>
                       policy =>
                       {
                           policy.WithOrigins("https://127.0.0.1:5500", "https://localhost:5500", "https://localhost:7016", "https://webshop.hillgrove.dk")
-                                .WithMethods("GET", "POST", "OPTIONS")
+                                .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                                 .AllowAnyHeader()
                                 .AllowCredentials();
                       });
@@ -126,7 +125,7 @@ app.UseMiddleware<ResponseHeaderMiddleware>();
 // Custom middleware - Allowed HTTP Methods (ASVS 14.5.1)
 app.Use(async (context, next) =>
 {
-    var allowedMethods = new HashSet<string> { "GET", "POST", "OPTIONS" };
+    var allowedMethods = new HashSet<string> { "GET", "POST", "PUT", "DELETE", "OPTIONS" };
     if (!allowedMethods.Contains(context.Request.Method))
     {
         context.Response.StatusCode = 405;

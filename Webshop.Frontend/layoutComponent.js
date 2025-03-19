@@ -22,6 +22,9 @@ export function createLayoutComponent() {
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/cart">Cart</router-link>
                                 </li>
+                                <li class="nav-item">
+                                    <router-link class="nav-link" to="/orders">Orders</router-link>
+                                </li>
 
                                 <!-- Show logout if logged in, otherwise show login -->
                                 <li v-if="isLoggedIn" class="nav-item">

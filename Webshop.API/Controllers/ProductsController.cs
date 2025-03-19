@@ -12,12 +12,10 @@ namespace Webshop.API.Controllers
     public class ProductsController : ControllerBase
     {        
         private readonly IProductRepository _productRepository;
-        private readonly ProductService _productService;
 
-        public ProductsController(IProductRepository productRepository, ProductService productService)
+        public ProductsController(IProductRepository productRepository)
         {
             _productRepository = productRepository;
-            _productService = productService;
         }
 
         // GET: api/<ProductsController>
