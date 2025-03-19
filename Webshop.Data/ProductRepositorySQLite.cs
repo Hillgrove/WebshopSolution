@@ -81,7 +81,13 @@ namespace Webshop.Data
             insertCommand.Parameters.AddWithValue("@Description", newProduct.Description);
             insertCommand.Parameters.AddWithValue("@PriceInOere", newProduct.PriceInOere);
 
-            newProduct.Id = Convert.ToInt32(insertCommand.ExecuteScalar());
+            var result = await insertCommand.ExecuteScalarAsync();
+            if (result == null)
+            {
+                throw new Exception("Database operation failed: No ID was returned.");
+            }
+
+            newProduct.Id = Convert.ToInt32(result);
             return newProduct;
         }
 
