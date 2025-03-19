@@ -21,14 +21,14 @@
             if (context.Request.Method == "POST" && 
                 context.Request.ContentType == null && 
                 context.Request.ContentLength == 0 &&
-                path == "/api/users/logout" || path == "/api/checkout")
+                (path == "/api/users/logout" || path == "/api/cart/checkout"))
             {
                 await _next(context);
                 return;
             }
 
-            // Skip Content-Type check for GET requests
-            if (context.Request.Method == HttpMethods.Get)
+            // Skip Content-Type validation for GET and DELETE requests
+            if (context.Request.Method == HttpMethods.Get || context.Request.Method == HttpMethods.Delete)
             {
                 await _next(context);
                 return;
