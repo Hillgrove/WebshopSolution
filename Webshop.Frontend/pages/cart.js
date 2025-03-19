@@ -88,10 +88,7 @@ export const CartPage = {
             if (newQuantity < 1) return; // Prevent negative values
 
             try {
-                await axios.post("/Cart/update", {
-                    productId: productId,
-                    delta: delta
-                });
+                await axios.put(`/Cart/${productId}`, { delta: delta });
                 await this.loadCart();
             }
             catch (error) {
@@ -101,10 +98,7 @@ export const CartPage = {
 
         async removeFromCart(productId) {
             try {
-                await axios.post("/Cart/remove", productId, {
-                    headers: { "Content-Type": "application/json" }
-                });
-
+                await axios.delete(`/Cart/${productId}`);
                 await this.loadCart();
             }
             catch (error) {

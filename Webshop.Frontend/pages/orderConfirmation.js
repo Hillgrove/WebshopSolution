@@ -10,7 +10,7 @@ export const OrderConfirmationPage = {
 
     data() {
         return {
-            total: localStorage.getItem("lastOrderTotal") || 0
+            total: Number(localStorage.getItem("lastOrderTotal")) || 0
         };
     },
 

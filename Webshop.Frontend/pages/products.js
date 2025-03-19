@@ -23,7 +23,7 @@ export const ProductsPage = {
                             <button class="btn btn-outline-secondary" @click="changeQuantity(product.id, 1)">+</button>
 
                         </div>
-                        <button v-else class="btn btn-primary" @click="addToCart(product.id)">Add to Cart</button>
+                        <button v-else class="btn btn-primary" @click="addToCart(product.id, 1)">Add to Cart</button>
 
                         </div>
                     </div>
@@ -61,9 +61,9 @@ export const ProductsPage = {
             }
         },
 
-        async addToCart(productId) {
+        async addToCart(productId, quantity = 1) {
             try {
-                await axios.post("/Cart/add", productId, {
+                await axios.post("/Cart/add", { productId, quantity }, {
                     headers: { "Content-Type": "application/json" }
                 });
 
@@ -77,7 +77,7 @@ export const ProductsPage = {
 
         async changeQuantity(productId, delta) {
             try {
-                await axios.post("/Cart/update", { productId, delta });
+                await axios.put(`/Cart/${productId}`, { delta });
                 await this.loadCart();
             }
             catch (error) {
