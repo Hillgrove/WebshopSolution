@@ -102,6 +102,32 @@ const router = VueRouter.createRouter({
 
 
 // ============================
+// Router Guard for Access Control
+// ============================
+const protectedRoutes = ["/change-password", "/orders", "/order-confirmation"];
+const publicOnlyRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+router.beforeEach(async (to, from, next) => {
+    const isLoggedIn = await checkLoginStatus();
+
+    // If user is not logged in, redirect to login
+    if (protectedRoutes.includes(to.path) && !isLoggedIn) {
+        next("/login");
+    }
+
+    // If user is logged in, redirect to frontpage
+    else if (publicOnlyRoutes.includes(to.path) && isLoggedIn) {
+        next("/")
+    }
+
+    // Allow rest
+    else {
+        next();
+    }
+});
+
+
+// ============================
 // Section: Vue App Initialization
 // ============================
 const app = Vue.createApp({
