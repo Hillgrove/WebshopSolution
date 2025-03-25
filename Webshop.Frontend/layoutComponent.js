@@ -49,16 +49,15 @@ export function createLayoutComponent() {
             </div>
         `,
 
-        data() {
-            return {
-                isLoggedIn: false
-            };
+        computed: {
+            isLoggedIn() {
+                return window.isLoggedIn;
+            }
         },
 
-        async mounted() {
-            this.isLoggedIn = await checkLoginStatus();
-            window.addEventListener("auth-changed", (event) => {
-                this.isLoggedIn = event.detail
+        mounted() {
+            window.addEventListener("auth-changed", () => {
+                this.$forceUpdate();
             });
         },
 
@@ -67,8 +66,7 @@ export function createLayoutComponent() {
                 try {
                     await axios.post("/Users/logout");
                 localStorage.clear();
-                this.isLoggedIn = false;
-                window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+                updateLoginState(false);
                 window.location.href = "/#/login"
                 }
                 catch (error) {
@@ -77,22 +75,5 @@ export function createLayoutComponent() {
 
             }
         }
-
-        // setup() {
-        //     const logoutUser = async () => {
-        //         try {
-        //             await axios.post("/Users/logout");
-        //             localStorage.clear();
-        //             setTimeout(() => {
-        //                 window.location.href = "/#/login";
-        //                 location.reload();
-        //             }, 500);
-        //         } catch (error) {
-        //             console.error("Logout failed", error);
-        //         }
-        //     };
-
-        //     return { logoutUser };
-        // }
     };
 }

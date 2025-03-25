@@ -51,20 +51,57 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
-// Section: Function to Check Login Status
+// Section: Global State Management
+// ============================
+window.isLoggedIn = false;
+
+function updateLoginState(status) {
+    window.isLoggedIn = status;
+    window.dispatchEvent(new CustomEvent("auth-changed", { detail: status }));
+}
+
+
+// ============================
+// Section: Axios Interceptor
+// ============================
+axios.interceptors.response.use(
+    response => response,
+    async error => {
+        if (error.response && error.response.status === 401) {
+            console.warn("Session expired or unauthorized. Logging out.");
+            updateLoginState(false);
+            window.location.href = "/#/login";
+        }
+        return Promise.reject(error);
+    }
+);
+
+
+// ============================
+// Section: Check Login Status
 // ============================
 export async function checkLoginStatus() {
     try {
-        const response = await axios.get("/Users/me"); // Check if session is active
-        // localStorage.setItem("userId", response.data.email); // Cache userId
-        window.dispatchEvent(new CustomEvent("auth-changed", { detail: true}));
-        return true;
+        const response = await axios.get("/Users/me");
+        if (response.status === 200) {
+            updateLoginState(true);
+        }
+        else {
+            updateLoginState(false);
+        }
+
     } catch (error) {
-        // localStorage.removeItem("userId"); // Clear cache if session is inactive
-        window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
-        return false;
+        if (error.response && error.response.status === 401) {
+            console.log("User not logged in. No active session found.");
+            updateLoginState(false);
+        } else {
+            console.error("Unexpected error during login status check:", error);
+        }
     }
 }
+
+await checkLoginStatus();
+
 
 
 /// ============================
@@ -108,7 +145,7 @@ const protectedRoutes = ["/change-password", "/orders", "/order-confirmation"];
 const publicOnlyRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 router.beforeEach(async (to, from, next) => {
-    const isLoggedIn = await checkLoginStatus();
+    const isLoggedIn = window.isLoggedIn;
 
     // If user is not logged in, redirect to login
     if (protectedRoutes.includes(to.path) && !isLoggedIn) {
