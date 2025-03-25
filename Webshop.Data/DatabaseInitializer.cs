@@ -90,9 +90,9 @@ namespace Webshop.Data
             {
                 using var insertCommand = new SQLiteCommand(@"
                 INSERT INTO Products (Name, Description, PriceInOere) VALUES
-                ('Produkt A', 'Beskrivelse af produkt A', 1999),
-                ('Produkt B', 'Beskrivelse af produkt B', 2999),
-                ('Produkt C', 'Beskrivelse af produkt C', 1499);", connection);
+                ('Product A', 'Description of product A', 1999),
+                ('Product B', 'Description of product B', 2999),
+                ('Product C', 'Description of product C', 1499);", connection);
                 await insertCommand.ExecuteNonQueryAsync();
             }
         }
