@@ -73,8 +73,22 @@ export const ResetPasswordPage = {
     },
 
     created() {
-        this.token = decodeURIComponent(this.$route.query.token.replace(/ /g, '+'));
-        // this.token = this.$route.query.token || "dummy-test-token"; // Enable this for testing
+        const tokenParam = this.$route.query.token;
+        if (!tokenParam) {
+            this.message = "Invalid or missing reset token.";
+            console.error("Reset token not found in URL.")
+            this.$router.replace("/login");
+            return;
+        }
+
+        try {
+            this.token = decodeURIComponent(tokenParam.replace(/ /g, '+'));
+        }
+        catch {
+            console.error("Error decoding token:", error);
+            this.message = "Invalid reset token format.";
+            this.$router.replace("/login");
+        }
     },
 
     computed: {
