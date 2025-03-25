@@ -25,12 +25,13 @@ namespace Webshop.Data
                 var insertCommand = new SQLiteCommand(connection)
                 {
                     CommandText = @"
-                    INSERT INTO Users (Email, PasswordHash, CreatedAt)
-                    VALUES (@Email, @PasswordHash, @CreatedAt);
+                    INSERT INTO Users (Email, Role, PasswordHash, CreatedAt)
+                    VALUES (@Email, @Role, @PasswordHash, @CreatedAt);
                     SELECT last_insert_rowid()"
                 };
 
                 insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
+                insertCommand.Parameters.AddWithValue("@Role", "User");
                 insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
 
