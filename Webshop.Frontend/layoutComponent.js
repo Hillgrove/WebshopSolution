@@ -1,4 +1,6 @@
-import { checkLoginStatus } from "./index.js";
+import { updateLoginState } from "./index.js";
+
+
 
 export function createLayoutComponent() {
     return {
@@ -49,14 +51,15 @@ export function createLayoutComponent() {
             </div>
         `,
 
-        computed: {
-            isLoggedIn() {
-                return window.isLoggedIn;
-            }
+        data() {
+            return {
+                isLoggedIn: window.isLoggedIn
+            };
         },
 
         mounted() {
-            window.addEventListener("auth-changed", () => {
+            window.addEventListener("auth-changed", (event) => {
+                this.isLoggedIn = event.detail;
                 this.$forceUpdate();
             });
         },

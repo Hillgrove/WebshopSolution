@@ -1,3 +1,5 @@
+import { updateLoginState } from "../index.js";
+
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -85,7 +87,8 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
-                    window.dispatchEvent(new CustomEvent("auth-changed", { detail: true }));
+                    updateLoginState(true);
+
                     // Redirect to home page
                     this.$router.push("/");
                 }

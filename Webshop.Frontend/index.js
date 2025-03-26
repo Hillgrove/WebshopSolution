@@ -55,7 +55,7 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 // ============================
 window.isLoggedIn = false;
 
-function updateLoginState(status) {
+export function updateLoginState(status) {
     window.isLoggedIn = status;
     window.dispatchEvent(new CustomEvent("auth-changed", { detail: status }));
 }
@@ -72,6 +72,7 @@ axios.interceptors.response.use(
             updateLoginState(false);
             window.location.href = "/#/login";
         }
+
         return Promise.reject(error);
     }
 );
