@@ -10,7 +10,7 @@ namespace Webshop.Data
         CREATE TABLE IF NOT EXISTS Users (
             ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             Email TEXT NOT NULL UNIQUE,
-            Role TEXT NOT NULL DEFAULT 'User',
+            Role TEXT NOT NULL DEFAULT 'Customer',
             PasswordHash TEXT NOT NULL,
             CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PasswordResetToken TEXT NULL,
