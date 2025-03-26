@@ -124,7 +124,7 @@ export const CartPage = {
             try {
                 const response = await axios.post("/Cart/checkout");
                 alert("Order placed successfully!");
-                // localStorage.setItem("lastOrderTotal", response.data.total);
+                localStorage.setItem("lastOrderTotal", response.data.total);
                 this.cart = [];
                 this.$router.push("/order-confirmation");
             }
