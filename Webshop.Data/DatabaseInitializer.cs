@@ -65,6 +65,7 @@ namespace Webshop.Data
                 await ExecuteTableCreation(connection, CreateOrdersTableSql);
                 await ExecuteTableCreation(connection, CreateOrderItemsTableSql);
 
+                await CreateGuestUserAsync(connection);
                 await SeedProductsIfEmpty(connection);
 
                 await transaction.CommitAsync();
@@ -80,6 +81,14 @@ namespace Webshop.Data
         {
             using var command = new SQLiteCommand(sql, connection);
             await command.ExecuteNonQueryAsync();
+        }
+
+        private async Task CreateGuestUserAsync(SQLiteConnection connection)
+        {
+            var insertCommand = new SQLiteCommand(@"
+                INSERT OR IGNORE INTO Users(ID, Email, Role, PasswordHash, CreatedAt)
+                VALUES(-1, 'guest', 'Guest', '', CURRENT_TIMESTAMP);", connection);
+            await insertCommand.ExecuteNonQueryAsync();
         }
 
         private static async Task SeedProductsIfEmpty(SQLiteConnection connection)
