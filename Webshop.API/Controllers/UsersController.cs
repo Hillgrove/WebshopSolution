@@ -66,9 +66,10 @@ namespace Webshop.API.Controllers
                 return Unauthorized("User not logged in.");
             }
 
+            var role = HttpContext.Session.GetString("UserRole") ?? "Guest";
             var user = await _userRepository.GetByIdAsync(userId.Value)
                 ?? throw new InvalidOperationException("User should never be null here.");
-            return Ok(new { email = user.Email });
+            return Ok(new { email = user.Email, role });
         }
 
         // POST api/<UsersController>/register
@@ -123,8 +124,9 @@ namespace Webshop.API.Controllers
                 ?? throw new InvalidOperationException("User should never be null here.");
             HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
             HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserRole", user.Role);
 
-            return Ok(new { message = result.Message });
+            return Ok(new { message = result.Message, role = user.Role });
         }
 
         // POST api/<UsersController>/logout
