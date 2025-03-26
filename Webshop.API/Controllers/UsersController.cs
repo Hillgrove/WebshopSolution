@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Webshop.Data;
-using Webshop.Data.Models;
 using Webshop.Services;
 using Webshop.Shared.DTOs;
 using Webshop.Shared.Enums;
@@ -119,12 +118,24 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
+            // Extract the cart before clearing the session
+            var cartJson = HttpContext.Session.GetString("ShoppingCart");
+
+            // ASVS: 3.2.1 - Clear session to prevent session fixation
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete("__Host-WebshopSession");
+
             // Store user session
             var user = await _userRepository.GetUserByEmailAsync(userAuthDto.Email)
                 ?? throw new InvalidOperationException("User should never be null here.");
-            HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("UserRole", user.Role);
+
+            // Restore the cart after login
+            if (!string.IsNullOrEmpty(cartJson))
+            {
+                HttpContext.Session.SetString("ShoppingCart", cartJson);
+            }
 
             return Ok(new { message = result.Message, role = user.Role });
         }
