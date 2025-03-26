@@ -108,6 +108,8 @@ app.UseHttpsRedirection();
 // Must be before authentication and controllers
 app.UseSession();
 
+app.UseMiddleware<RoleMiddleware>();
+
 // Apply CORS policy
 app.UseCors("AllowSpecificOrigin");
 
