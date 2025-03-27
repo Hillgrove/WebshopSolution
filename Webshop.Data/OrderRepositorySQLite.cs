@@ -14,10 +14,10 @@ namespace Webshop.Data
 
         public async Task<List<Order>> GetOrdersByUserIdAsync(int userId)
         {
+            var orders = new List<Order>();
+
             using var connection = new SQLiteConnection(_connectionString);
             await connection.OpenAsync();
-
-            var orders = new List<Order>();
 
             var getOrdersCommand = new SQLiteCommand(connection)
             {

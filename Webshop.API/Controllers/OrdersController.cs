@@ -19,7 +19,6 @@ namespace Webshop.API.Controllers
         [HttpGet("my-orders")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<Order>>> GetUserOrders()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
@@ -29,11 +28,6 @@ namespace Webshop.API.Controllers
             }
 
             var orders = await _orderRepository.GetOrdersByUserIdAsync(userId.Value);
-            if (orders == null || orders.Count == 0)
-            {
-                return NotFound("No orders found.");
-            }
-
             return Ok(orders);
         }
     }

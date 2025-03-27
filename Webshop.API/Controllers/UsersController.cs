@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Webshop.Data;
-using Webshop.Data.Models;
 using Webshop.Services;
 using Webshop.Shared.DTOs;
 using Webshop.Shared.Enums;
@@ -57,18 +56,24 @@ namespace Webshop.API.Controllers
         // GET api/<UsersController>/me
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> GetCurrentUser()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
-                return Unauthorized("User not logged in.");
+                return Ok(new { message = "User not logged in", role = "Guest" });
             }
 
+            var role = HttpContext.Session.GetString("UserRole") ?? "Guest";
             var user = await _userRepository.GetByIdAsync(userId.Value)
                 ?? throw new InvalidOperationException("User should never be null here.");
-            return Ok(new { email = user.Email });
+
+            if (user == null)
+            {
+                return Ok(new { message = "User not found", role = "Guest" });
+            }
+
+            return Ok(new { email = user.Email, role });
         }
 
         // POST api/<UsersController>/register
@@ -118,13 +123,26 @@ namespace Webshop.API.Controllers
                 return Unauthorized(result.Message);
             }
 
+            // Extract the cart before clearing the session
+            var cartJson = HttpContext.Session.GetString("ShoppingCart");
+
+            // ASVS: 3.2.1 - Clear session to prevent session fixation
+            HttpContext.Session.Clear();
+            Response.Cookies.Delete("__Host-WebshopSession");
+
             // Store user session
             var user = await _userRepository.GetUserByEmailAsync(userAuthDto.Email)
                 ?? throw new InvalidOperationException("User should never be null here.");
-            HttpContext.Session.Clear(); // ASVS: 3.2.1 - Clear session to prevent session fixation
             HttpContext.Session.SetInt32("UserId", user.Id);
+            HttpContext.Session.SetString("UserRole", user.Role);
 
-            return Ok(new { message = result.Message });
+            // Restore the cart after login
+            if (!string.IsNullOrEmpty(cartJson))
+            {
+                HttpContext.Session.SetString("ShoppingCart", cartJson);
+            }
+
+            return Ok(new { message = result.Message, role = user.Role });
         }
 
         // POST api/<UsersController>/logout

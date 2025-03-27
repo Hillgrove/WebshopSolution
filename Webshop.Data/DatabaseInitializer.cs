@@ -10,6 +10,7 @@ namespace Webshop.Data
         CREATE TABLE IF NOT EXISTS Users (
             ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             Email TEXT NOT NULL UNIQUE,
+            Role TEXT NOT NULL DEFAULT 'Customer',
             PasswordHash TEXT NOT NULL,
             CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PasswordResetToken TEXT NULL,
@@ -64,6 +65,7 @@ namespace Webshop.Data
                 await ExecuteTableCreation(connection, CreateOrdersTableSql);
                 await ExecuteTableCreation(connection, CreateOrderItemsTableSql);
 
+                await CreateGuestUserAsync(connection);
                 await SeedProductsIfEmpty(connection);
 
                 await transaction.CommitAsync();
@@ -81,6 +83,14 @@ namespace Webshop.Data
             await command.ExecuteNonQueryAsync();
         }
 
+        private async Task CreateGuestUserAsync(SQLiteConnection connection)
+        {
+            var insertCommand = new SQLiteCommand(@"
+                INSERT OR IGNORE INTO Users(ID, Email, Role, PasswordHash, CreatedAt)
+                VALUES(-1, 'guest', 'Guest', '', CURRENT_TIMESTAMP);", connection);
+            await insertCommand.ExecuteNonQueryAsync();
+        }
+
         private static async Task SeedProductsIfEmpty(SQLiteConnection connection)
         {
             using var countCommand = new SQLiteCommand("SELECT COUNT(*) FROM Products", connection);
@@ -90,9 +100,9 @@ namespace Webshop.Data
             {
                 using var insertCommand = new SQLiteCommand(@"
                 INSERT INTO Products (Name, Description, PriceInOere) VALUES
-                ('Produkt A', 'Beskrivelse af produkt A', 1999),
-                ('Produkt B', 'Beskrivelse af produkt B', 2999),
-                ('Produkt C', 'Beskrivelse af produkt C', 1499);", connection);
+                ('Product A', 'Description of product A', 1999),
+                ('Product B', 'Description of product B', 2999),
+                ('Product C', 'Description of product C', 1499);", connection);
                 await insertCommand.ExecuteNonQueryAsync();
             }
         }

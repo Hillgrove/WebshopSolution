@@ -25,12 +25,13 @@ namespace Webshop.Data
                 var insertCommand = new SQLiteCommand(connection)
                 {
                     CommandText = @"
-                    INSERT INTO Users (Email, PasswordHash, CreatedAt)
-                    VALUES (@Email, @PasswordHash, @CreatedAt);
+                    INSERT INTO Users (Email, Role, PasswordHash, CreatedAt)
+                    VALUES (@Email, @Role, @PasswordHash, @CreatedAt);
                     SELECT last_insert_rowid()"
                 };
 
                 insertCommand.Parameters.AddWithValue("@Email", newUser.Email);
+                insertCommand.Parameters.AddWithValue("@Role", "Customer");
                 insertCommand.Parameters.AddWithValue("@PasswordHash", newUser.PasswordHash);
                 insertCommand.Parameters.AddWithValue("@CreatedAt", newUser.CreatedAt);
 
@@ -69,10 +70,11 @@ namespace Webshop.Data
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3),
-                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                    Role = reader.GetString(2),
+                    PasswordHash = reader.GetString(3),
+                    CreatedAt = reader.GetDateTime(4),
+                    PasswordResetToken = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    PasswordResetTokenExpiration = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6)
                 };
 
                 users.Add(user);
@@ -97,10 +99,11 @@ namespace Webshop.Data
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3),
-                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                    Role = reader.GetString(2),
+                    PasswordHash = reader.GetString(3),
+                    CreatedAt = reader.GetDateTime(4),
+                    PasswordResetToken = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    PasswordResetTokenExpiration = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6)
                 };
             }
 
@@ -122,10 +125,11 @@ namespace Webshop.Data
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3),
-                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                    Role = reader.GetString(2),
+                    PasswordHash = reader.GetString(3),
+                    CreatedAt = reader.GetDateTime(4),
+                    PasswordResetToken = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    PasswordResetTokenExpiration = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6)
                 };
             }
 
@@ -168,10 +172,11 @@ namespace Webshop.Data
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    PasswordHash = reader.GetString(2),
-                    CreatedAt = reader.GetDateTime(3),
-                    PasswordResetToken = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    PasswordResetTokenExpiration = reader.IsDBNull(5) ? (DateTime?)null : reader.GetDateTime(5)
+                    Role = reader.GetString(2),
+                    PasswordHash = reader.GetString(3),
+                    CreatedAt = reader.GetDateTime(4),
+                    PasswordResetToken = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    PasswordResetTokenExpiration = reader.IsDBNull(6) ? (DateTime?)null : reader.GetDateTime(6)
                 };
             }
 

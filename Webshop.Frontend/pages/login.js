@@ -1,3 +1,5 @@
+import { updateLoginState } from "../index.js";
+
 export const LoginPage = {
     template: `
         <div class="container mt-5">
@@ -85,9 +87,17 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
-                    window.dispatchEvent(new CustomEvent("auth-changed", { detail: true }));
-                    // Redirect to home page
-                    this.$router.push("/");
+                    updateLoginState(true);
+
+                    // Check if login was triggered from the cart/checkout flow
+                    const redirectTo = localStorage.getItem("redirectAfterLogin");
+                    if (redirectTo && this.$router.resolve(redirectTo).matched.length > 0) {
+                        localStorage.removeItem("redirectAfterLogin");
+                        this.$router.push(redirectTo);
+                    } else {
+                        localStorage.removeItem("redirectAfterLogin");
+                        this.$router.push("/"); // Default to home page if no redirect is set
+                    }
                 }
 
             } catch (error) {

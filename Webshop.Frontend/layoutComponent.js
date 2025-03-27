@@ -1,4 +1,6 @@
-import { checkLoginStatus } from "./index.js";
+import { updateLoginState } from "./index.js";
+
+
 
 export function createLayoutComponent() {
     return {
@@ -22,8 +24,15 @@ export function createLayoutComponent() {
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/cart">Cart</router-link>
                                 </li>
-                                <li class="nav-item">
+                                <li v-if="isLoggedIn" class="nav-item">
                                     <router-link class="nav-link" to="/orders">Orders</router-link>
+                                </li>
+                            </ul>
+
+                            <ul class="navbar-nav mb-2 mb-lg-0 navbar-right">
+
+                                <li v-if="isLoggedIn" class="nav-item">
+                                    <router-link class="nav-link" to="/change-password">Change Password</router-link>
                                 </li>
 
                                 <!-- Show logout if logged in, otherwise show login -->
@@ -33,11 +42,8 @@ export function createLayoutComponent() {
                                 <li v-else class="nav-item">
                                     <router-link class="btn btn-success" to="/login">Log In</router-link>
                                 </li>
-
-                                <li class="nav-item">
-                                    <router-link class="nav-link" to="/change-password">Change Password</router-link>
-                                </li>
                             </ul>
+
                         </div>
                     </div>
                 </nav>
@@ -47,14 +53,14 @@ export function createLayoutComponent() {
 
         data() {
             return {
-                isLoggedIn: false
+                isLoggedIn: window.isLoggedIn
             };
         },
 
-        async mounted() {
-            this.isLoggedIn = await checkLoginStatus();
+        mounted() {
             window.addEventListener("auth-changed", (event) => {
-                this.isLoggedIn = event.detail
+                this.isLoggedIn = event.detail;
+                this.$forceUpdate();
             });
         },
 
@@ -63,8 +69,7 @@ export function createLayoutComponent() {
                 try {
                     await axios.post("/Users/logout");
                 localStorage.clear();
-                this.isLoggedIn = false;
-                window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
+                updateLoginState(false);
                 window.location.href = "/#/login"
                 }
                 catch (error) {
@@ -73,22 +78,5 @@ export function createLayoutComponent() {
 
             }
         }
-
-        // setup() {
-        //     const logoutUser = async () => {
-        //         try {
-        //             await axios.post("/Users/logout");
-        //             localStorage.clear();
-        //             setTimeout(() => {
-        //                 window.location.href = "/#/login";
-        //                 location.reload();
-        //             }, 500);
-        //         } catch (error) {
-        //             console.error("Logout failed", error);
-        //         }
-        //     };
-
-        //     return { logoutUser };
-        // }
     };
 }

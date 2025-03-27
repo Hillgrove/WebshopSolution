@@ -3,10 +3,12 @@ export const CartPage = {
         <div class="container mt-4">
             <h1 class="text-center mb-4">Shopping Cart</h1>
 
+            <!-- Cart Empty Message -->
             <div v-if="cart.length === 0" class="alert alert-info text-center">
                 Your cart is empty.
             </div>
 
+            <!-- Cart Items Table -->
             <div v-else>
                 <table class="table table-bordered text-center">
                     <thead class="table-dark">
@@ -43,10 +45,21 @@ export const CartPage = {
                     </tbody>
                 </table>
 
-                <!-- Total Price -->
+                <!-- Checkout Actions -->
                 <div class="text-end mt-3">
                     <h4>Total Price: {{ totalPrice.toFixed(2) }} kr.</h4>
-                    <button class="btn btn-success mt-3" @click="checkout">Checkout</button>
+
+                    <!-- If not logged in -->
+                    <div v-if="!isLoggedIn" class="text-center">
+                        <p>You are not logged in.</p>
+                        <button @click="navigateToLogin" class="btn btn-primary">Log In to Checkout</button>
+                        <button @click="checkoutAsGuest" class="btn btn-success">Checkout as Guest</button>
+                    </div>
+
+                    <!-- If logged in -->
+                    <div v-else class="text-center">
+                        <button @click="checkout" class="btn btn-success">Checkout</button>
+                    </div>
                 </div>
 
             </div>
@@ -55,7 +68,8 @@ export const CartPage = {
 
     data() {
         return {
-            cart: []
+            cart: [],
+            isLoggedIn: window.isLoggedIn
         };
     },
 
@@ -109,15 +123,13 @@ export const CartPage = {
         async checkout() {
             try {
                 const response = await axios.post("/Cart/checkout");
+                alert("Order placed successfully!");
                 localStorage.setItem("lastOrderTotal", response.data.total);
                 this.cart = [];
                 this.$router.push("/order-confirmation");
             }
             catch (error) {
-                if (error.response && error.response.status === 401) {
-                    alert("You must be logged in to checkout.");
-                }
-                else if (error.response && error.response.status === 400) {
+                if (error.response && error.response.status === 400) {
                     alert("Your cart is empty.");
                 }
                 else {
@@ -125,6 +137,29 @@ export const CartPage = {
                     alert("Checkout failed.");
                 }
             }
+        },
+
+        navigateToLogin() {
+            // Store the intended redirect to cart after login
+            localStorage.setItem("redirectAfterLogin", "/cart");
+            this.$router.push("/login");
+        },
+
+        async checkoutAsGuest() {
+            try {
+                const response = await axios.post("/Cart/checkout");
+                alert("Order placed successfully as guest!");
+                this.cart = [];
+                this.$router.push("/order-confirmation");
+            } catch (error) {
+                if (error.response && error.response.status === 400) {
+                    alert("Your cart is empty.");
+                } else {
+                    console.error("Guest checkout failed:", error);
+                    alert("Guest checkout failed.");
+                }
+            }
         }
+
     }
 };

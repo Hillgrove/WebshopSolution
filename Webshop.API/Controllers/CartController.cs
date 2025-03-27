@@ -116,29 +116,20 @@ namespace Webshop.API.Controllers
         [HttpPost("checkout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Checkout()
         {
             var cart = GetCart();
-            if (cart.Count == 0) return BadRequest("Cart is empty.");
-
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
+            if (cart.Count == 0)
             {
-                return Unauthorized("User not logged in.");
+                return BadRequest("Cart is empty.");
             }
+            
 
-            var user = await _userRepository.GetByIdAsync(userId.Value);
-            if (user == null)
-            {
-                return Unauthorized("User not found");
-            }
-
-            int totalPriceInOere = cart.Sum(item => item.Quantity * item.PriceInOere);
+            int userId = HttpContext.Session.GetInt32("UserId") ?? -1;
 
             var order = new Order
             {
-                UserId = user.Id,
+                UserId = userId,
                 Items = cart.Select(item => new OrderItem
                 {
                     ProductId = item.ProductId,
@@ -146,14 +137,15 @@ namespace Webshop.API.Controllers
                     Quantity = item.Quantity,
                     PriceAtPurchaseInOere = item.PriceInOere
                 }).ToList(),
-                TotalPriceInOere = totalPriceInOere
+                TotalPriceInOere = cart.Sum(item => item.Quantity * item.PriceInOere),
+                CreatedAt = DateTime.UtcNow
             };
 
             await _orderRepository.SaveAsync(order);
 
             HttpContext.Session.Remove("ShoppingCart"); // Clear cart after purchase
 
-            return Ok(new { message = "Order placed successfully", total = totalPriceInOere });
+            return Ok(new { message = "Order placed successfully", total = order.TotalPriceInOere });
         }
 
 

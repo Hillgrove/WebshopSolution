@@ -51,20 +51,52 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 
 
 // ============================
-// Section: Function to Check Login Status
+// Section: Global State Management
 // ============================
-export async function checkLoginStatus() {
+window.isLoggedIn = false;
+
+export function updateLoginState(status) {
+    window.isLoggedIn = status;
+    window.dispatchEvent(new CustomEvent("auth-changed", { detail: status }));
+}
+
+
+// ============================
+// Section: Axios Interceptor
+// ============================
+axios.interceptors.response.use(
+    response => response,
+    async error => {
+        if (error.response && error.response.status === 401) {
+            updateLoginState(false);
+            window.location.href = "/#/login";
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+
+// ============================
+// Section: Check Login Status
+// ============================
+async function checkLoginStatus() {
     try {
-        const response = await axios.get("/Users/me"); // Check if session is active
-        // localStorage.setItem("userId", response.data.email); // Cache userId
-        window.dispatchEvent(new CustomEvent("auth-changed", { detail: true}));
-        return true;
+        const response = await axios.get("/Users/me");
+        if (response.data.role !== "Guest") {
+            updateLoginState(true);
+        }
+        else {
+            updateLoginState(false);
+        }
+
     } catch (error) {
-        // localStorage.removeItem("userId"); // Clear cache if session is inactive
-        window.dispatchEvent(new CustomEvent("auth-changed", { detail: false }));
-        return false;
+        updateLoginState(false);
     }
 }
+
+await checkLoginStatus();
+
 
 
 /// ============================
@@ -98,6 +130,32 @@ window.fpPromise.then(() => {
 const router = VueRouter.createRouter({
     history: VueRouter.createWebHashHistory(),
     routes
+});
+
+
+// ============================
+// Router Guard for Access Control
+// ============================
+const protectedRoutes = ["/change-password", "/orders", "/order-confirmation"];
+const publicOnlyRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+router.beforeEach(async (to, from, next) => {
+    const isLoggedIn = window.isLoggedIn;
+
+    // If user is not logged in, redirect to login
+    if (protectedRoutes.includes(to.path) && !isLoggedIn) {
+        next("/login");
+    }
+
+    // If user is logged in, redirect to frontpage
+    else if (publicOnlyRoutes.includes(to.path) && isLoggedIn) {
+        next("/")
+    }
+
+    // Allow rest
+    else {
+        next();
+    }
 });
 
 
