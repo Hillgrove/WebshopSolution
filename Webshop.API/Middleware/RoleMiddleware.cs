@@ -19,7 +19,6 @@
                 context.Session.SetString("UserRole", role);
             }
 
-            // context.Items["UserRole"] = role;
             await _next(context);
         }
     }
