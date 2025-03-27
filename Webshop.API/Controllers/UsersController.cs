@@ -56,18 +56,23 @@ namespace Webshop.API.Controllers
         // GET api/<UsersController>/me
         [HttpGet("me")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> GetCurrentUser()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
-                return Unauthorized("User not logged in.");
+                return Ok(new { message = "User not logged in", role = "Guest" });
             }
 
             var role = HttpContext.Session.GetString("UserRole") ?? "Guest";
             var user = await _userRepository.GetByIdAsync(userId.Value)
                 ?? throw new InvalidOperationException("User should never be null here.");
+
+            if (user == null)
+            {
+                return Ok(new { message = "User not found", role = "Guest" });
+            }
+
             return Ok(new { email = user.Email, role });
         }
 

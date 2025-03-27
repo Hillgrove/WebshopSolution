@@ -68,7 +68,6 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         if (error.response && error.response.status === 401) {
-            console.warn("Session expired or unauthorized. Logging out.");
             updateLoginState(false);
             window.location.href = "/#/login";
         }
@@ -81,10 +80,10 @@ axios.interceptors.response.use(
 // ============================
 // Section: Check Login Status
 // ============================
-export async function checkLoginStatus() {
+async function checkLoginStatus() {
     try {
         const response = await axios.get("/Users/me");
-        if (response.status === 200) {
+        if (response.data.role !== "Guest") {
             updateLoginState(true);
         }
         else {
@@ -92,12 +91,7 @@ export async function checkLoginStatus() {
         }
 
     } catch (error) {
-        if (error.response && error.response.status === 401) {
-            console.log("User not logged in. No active session found.");
-            updateLoginState(false);
-        } else {
-            console.error("Unexpected error during login status check:", error);
-        }
+        updateLoginState(false);
     }
 }
 
