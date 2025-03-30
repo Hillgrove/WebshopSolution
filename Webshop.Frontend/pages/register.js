@@ -4,6 +4,8 @@ export const RegisterPage = {
             <div class="row justify-content-center">
                 <div class="col-10 col-sm-10 col-md-8 col-lg-6">
 
+                <div v-if="isReady">
+
                     <!-- Card -->
                     <div class="card">
 
@@ -48,8 +50,6 @@ export const RegisterPage = {
                                                                                                      || !registerData.repeatPassword">
                                     Register
                                 </button>
-
-
                             </form>
 
                             <div v-if="passwordFeedback">
@@ -77,6 +77,12 @@ export const RegisterPage = {
                         </div>
 
                     </div>
+
+                </div>
+                <div v-else class="text-center mt-4">
+                    <p>Loading...</p>
+                </div>
+
                 </div>
             </div>
         </div>
@@ -86,6 +92,7 @@ export const RegisterPage = {
             registerData: { email: "", password: "", repeatPassword: "" },
             message: "",
             passwordFeedback: "",
+            isReady: false
         }
     },
 
@@ -106,6 +113,21 @@ export const RegisterPage = {
             this.passwordFeedback = strengthLabels[result.score];
         }
     },
+
+    mounted() {
+        if (!window.userRole || window.userRole !== "Guest") {
+            // Vent og prøv igen om lidt
+            const waitForRole = setInterval(() => {
+                if (window.userRole === "Guest") {
+                    clearInterval(waitForRole);
+                    this.isReady = true;
+                }
+            }, 100);
+        } else {
+            this.isReady = true;
+        }
+    },
+
 
     methods: {
         async registerUser() {
