@@ -13,10 +13,11 @@
         {
             var role = context.Session.GetString("UserRole");
 
-            if (string.IsNullOrEmpty(role))
+            if (!context.Session.Keys.Contains("UserRole"))
             {
                 role = "Guest";
                 context.Session.SetString("UserRole", role);
+                context.Session.SetInt32("UserId", -1);
             }
 
             await _next(context);

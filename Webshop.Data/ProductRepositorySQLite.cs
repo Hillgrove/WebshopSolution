@@ -3,7 +3,6 @@ using Webshop.Data.Models;
 
 namespace Webshop.Data
 {
-    // TODO: Check if I need all the properties in the various commands
     public class ProductRepositorySQLite : IProductRepository
     {
         private readonly string _connectionString;

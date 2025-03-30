@@ -10,7 +10,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
 
 var logger = loggerFactory.CreateLogger<Program>();
 
-logger.LogInformation("Application is starting...");
+logger.LogInformation("Application is starting...");    
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -51,7 +51,6 @@ builder.Services.AddSession(options =>
     // ASVS: 3.4.4 - Use "__Host-" prefix to enforce HTTPS and prevent domain-wide cookies
     options.Cookie.Name = "__Host-WebshopSession";  // Strengthens cookie scoping
 
-    // TODO: Fix this - if set to "/api" sessions cookies are not created in browser
     // ASVS: 3.4.5 - Restrict session cookie scope to API routes only
     options.Cookie.Path = "/";  // Ensures session cookies are only sent to API endpoints
 

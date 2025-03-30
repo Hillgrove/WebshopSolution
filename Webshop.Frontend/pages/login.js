@@ -32,6 +32,16 @@ export const LoginPage = {
                                 <!-- Submit button -->
                                 <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
 
+                                <!-- Autofill buttons -->
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button @click="fillAdmin" type="button" class="btn btn-outline-secondary btn-sm">
+                                        Autofill Admin
+                                    </button>
+                                    <button @click="fillCustomer" type="button" class="btn btn-outline-secondary btn-sm">
+                                        Autofill Customer
+                                    </button>
+                                </div>
+
                             </form>
 
                             <div v-if="message" class="alert alert-info mt-3">
@@ -87,7 +97,7 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
-                    updateLoginState(true);
+                    updateLoginState(true, response.data.role);
 
                     // Check if login was triggered from the cart/checkout flow
                     const redirectTo = localStorage.getItem("redirectAfterLogin");
@@ -111,6 +121,16 @@ export const LoginPage = {
                     this.message = "Login failed: " + error.message;
                 }
             }
+        },
+
+        fillAdmin() {
+            this.loginData.email = "webshopadmin@hillgrove.dk";
+            this.loginData.password = "webshopadmin@hillgrove.dk";
+        },
+
+        fillCustomer() {
+            this.loginData.email = "customer@hillgrove.dk";
+            this.loginData.password = "customer@hillgrove.dk";
         }
     }
 };

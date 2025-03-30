@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Webshop.API.Attributes;
 using Webshop.Data;
 using Webshop.Services;
 using Webshop.Shared.DTOs;
@@ -28,6 +29,24 @@ namespace Webshop.API.Controllers
             _userRepository = repository;
             _passwordService = passwordService;
             _validationService = validationService;
+        }
+
+
+        // GET: api/<UsersController>/all
+        [HttpGet("all")]
+        [SessionAuthorize(Roles = new[] { "Admin" })]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<object>>> GetAllUsers()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            return Ok(users.Select(u => new
+            {
+                u.Id,
+                u.Email,
+                u.Role,
+                CreatedAt = u.CreatedAt.ToString("o") // ISO 8601 format
+            }));
         }
 
         // GET: api/<UsersController>/5
@@ -78,6 +97,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/register
         [HttpPost("register")]
+        [SessionAuthorize(Roles = new[] { "Guest" })]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<UserDto>> Register([FromBody] UserAuthDto userAuthDto)
@@ -100,6 +120,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/login
         [HttpPost("login")]
+        [SessionAuthorize(Roles = new[] { "Guest" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -147,6 +168,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/logout
         [HttpPost("logout")]
+        [SessionAuthorize(Roles = new[] { "Customer", "Admin" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult Logout()
@@ -174,6 +196,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/forgot-password
         [HttpPost("forgot-password")]
+        [SessionAuthorize(Roles = new[] { "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
@@ -202,6 +225,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/reset-password
         [HttpPost("reset-password")]
+        [SessionAuthorize(Roles = new[] { "Guest" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -229,6 +253,7 @@ namespace Webshop.API.Controllers
 
         // POST api/<UsersController>/change-password
         [HttpPost("change-password")]
+        [SessionAuthorize(Roles = new[] { "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
