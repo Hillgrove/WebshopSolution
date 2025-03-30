@@ -10,7 +10,7 @@ var loggerFactory = LoggerFactory.Create(builder =>
 
 var logger = loggerFactory.CreateLogger<Program>();
 
-logger.LogInformation("Application is starting...");
+logger.LogInformation("Application is starting...");    
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
