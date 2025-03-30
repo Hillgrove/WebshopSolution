@@ -278,5 +278,28 @@ namespace Webshop.API.Controllers
 
             return Ok(result.Message);
         }
+
+        // DELETE api/<UsersController>/5
+        [HttpDelete("{id}")]
+        [SessionAuthorize(Roles = new[] { "Admin" })]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.Role == "Admin" || user.Role == "Guest")
+            {
+                return BadRequest("Cannot delete Admin or Guest accounts.");
+            }
+
+            await _userRepository.DeleteAsync(id);
+            return Ok(new { message = "User deleted successfully." });
+        }
     }
 }

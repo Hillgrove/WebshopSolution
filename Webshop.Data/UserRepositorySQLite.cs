@@ -204,5 +204,16 @@ namespace Webshop.Data
 
             await command.ExecuteNonQueryAsync();
         }
+
+        public async Task DeleteAsync(int id)
+        {
+            using var connection = new SQLiteConnection(_connectionString);
+            await connection.OpenAsync();
+
+            var command = new SQLiteCommand("DELETE FROM Users WHERE ID = @id", connection);
+            command.Parameters.AddWithValue("@id", id);
+            await command.ExecuteNonQueryAsync();
+        }
+
     }
 }

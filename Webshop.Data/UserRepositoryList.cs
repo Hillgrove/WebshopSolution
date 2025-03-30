@@ -59,5 +59,10 @@ namespace Webshop.Data
             }
             return Task.CompletedTask;
         }
+
+        public Task DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

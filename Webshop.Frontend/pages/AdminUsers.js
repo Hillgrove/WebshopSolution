@@ -15,6 +15,7 @@ export const AdminUsersPage = {
                             <th>Email</th>
                             <th>Role</th>
                             <th>Created At</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -23,6 +24,11 @@ export const AdminUsersPage = {
                             <td>{{ user.email }}</td>
                             <td>{{ user.role }}</td>
                             <td>{{ new Date(user.createdAt).toLocaleString() }}</td>
+                            <td>
+                                <button v-if="user.role !== 'Admin' && user.role !== 'Guest'" @click="deleteUser(user.id)" class="btn btn-danger btn-sm">Delete</button>
+                                <span v-else>&nbsp;</span>
+                            </td>
+
                         </tr>
                     </tbody>
                 </table>
@@ -44,4 +50,18 @@ export const AdminUsersPage = {
             console.error("Failed to fetch users:", error);
         }
     },
+
+    methods: {
+        async deleteUser(userId) {
+            if (!confirm("Are you sure you want to delete this user?")) return;
+
+            try {
+                await axios.delete(`/Users/${userId}`);
+                this.users = this.users.filter(u => u.id !== userId);
+            } catch (error) {
+                console.error("Failed to delete user:", error);
+                alert("Deletion failed.");
+            }
+        }
+    }
 };

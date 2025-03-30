@@ -11,5 +11,7 @@ namespace Webshop.Data
         Task SavePasswordResetTokenAsync(int userId, string token, DateTime expiration);
         Task<User?> GetUserByPasswordResetTokenAsync(string token);
         Task UpdateAsync(User user);
+        Task DeleteAsync(int id);
+
     }
 }
