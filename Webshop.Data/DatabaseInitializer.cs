@@ -1,4 +1,5 @@
 ﻿using System.Data.SQLite;
+using Isopoh.Cryptography.Argon2;
 
 namespace Webshop.Data
 {
@@ -65,6 +66,7 @@ namespace Webshop.Data
                 await ExecuteTableCreation(connection, CreateOrdersTableSql);
                 await ExecuteTableCreation(connection, CreateOrderItemsTableSql);
 
+                await CreateAdminUserAsync(connection);
                 await CreateGuestUserAsync(connection);
                 await SeedProductsIfEmpty(connection);
 
@@ -90,6 +92,20 @@ namespace Webshop.Data
                 VALUES(-1, 'guest', 'Guest', '', CURRENT_TIMESTAMP);", connection);
             await insertCommand.ExecuteNonQueryAsync();
         }
+
+        private async Task CreateAdminUserAsync(SQLiteConnection connection)
+        {
+            var insertCommand = new SQLiteCommand(@"
+                INSERT OR IGNORE INTO Users(Email, Role, PasswordHash, CreatedAt)
+                VALUES('webshopadmin@hillgrove.dk', 'Admin', @PasswordHash, CURRENT_TIMESTAMP);", connection);
+
+            string password = "webshopadmin@hillgrove.dk";
+            string passwordHash = Argon2.Hash(password);
+
+            insertCommand.Parameters.AddWithValue("@PasswordHash", passwordHash);
+            await insertCommand.ExecuteNonQueryAsync();
+        }
+
 
         private static async Task SeedProductsIfEmpty(SQLiteConnection connection)
         {

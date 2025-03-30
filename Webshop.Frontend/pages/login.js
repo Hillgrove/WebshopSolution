@@ -87,7 +87,7 @@ export const LoginPage = {
                 });
 
                 if (response.status === 200) {
-                    updateLoginState(true);
+                    updateLoginState(true, response.data.role);
 
                     // Check if login was triggered from the cart/checkout flow
                     const redirectTo = localStorage.getItem("redirectAfterLogin");

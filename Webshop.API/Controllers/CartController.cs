@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Webshop.API.Attributes;
 using Webshop.Data;
 using Webshop.Data.Models;
 using Webshop.Shared.DTOs;
@@ -15,20 +16,18 @@ namespace Webshop.API.Controllers
         private const string SessionkeyCart = "ShoppingCart";
         private readonly IProductRepository _productRepository;
         private readonly OrderRepositorySQLite _orderRepository;
-        private readonly IUserRepository _userRepository;
 
         public CartController(
             IProductRepository productRepository, 
-            OrderRepositorySQLite orderRepository, 
-            IUserRepository userRepository)
+            OrderRepositorySQLite orderRepository)
         {
             _productRepository = productRepository;
             _orderRepository = orderRepository;
-            _userRepository = userRepository;
         }
 
-
+        
         [HttpPost("add")]
+        [SessionAuthorize(Roles = new[] { "Guest", "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -71,6 +70,7 @@ namespace Webshop.API.Controllers
 
 
         [HttpPut("{productId}")]
+        [SessionAuthorize(Roles = new[] { "Guest", "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult UpdateCartItem(int productId, [FromBody] CartUpdateDto updateDto)
@@ -95,6 +95,7 @@ namespace Webshop.API.Controllers
 
 
         [HttpDelete("{productId}")]
+        [SessionAuthorize(Roles = new[] { "Guest", "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult RemoveFromCart(int productId)
         {
@@ -106,6 +107,7 @@ namespace Webshop.API.Controllers
 
 
         [HttpGet]
+        [SessionAuthorize(Roles = new[] { "Guest", "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult GetCartItems()
         {
@@ -114,6 +116,7 @@ namespace Webshop.API.Controllers
 
 
         [HttpPost("checkout")]
+        [SessionAuthorize(Roles = new[] { "Guest", "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Checkout()

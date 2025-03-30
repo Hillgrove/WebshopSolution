@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Webshop.API.Attributes;
 using Webshop.Data;
 using Webshop.Data.Models;
 
@@ -17,6 +18,7 @@ namespace Webshop.API.Controllers
         }
 
         [HttpGet("my-orders")]
+        [SessionAuthorize(Roles = new[] { "Customer" })]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<Order>>> GetUserOrders()

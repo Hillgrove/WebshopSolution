@@ -43,7 +43,10 @@ export const ProductsPage = {
         try {
             const response = await axios.get("/Products");
             this.products = response.data;
-            await this.loadCart();
+
+            if (window.userRole === "Guest" || window.userRole === "Customer") {
+                await this.loadCart();
+            }
         }
         catch (error) {
             console.error("Error fetching products:", error);
@@ -62,6 +65,8 @@ export const ProductsPage = {
         },
 
         async addToCart(productId, quantity = 1) {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             try {
                 await axios.post("/Cart/add", { productId, quantity }, {
                     headers: { "Content-Type": "application/json" }
@@ -76,6 +81,8 @@ export const ProductsPage = {
         },
 
         async changeQuantity(productId, delta) {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             try {
                 await axios.put(`/Cart/${productId}`, { delta });
                 await this.loadCart();

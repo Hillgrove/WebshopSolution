@@ -1,7 +1,5 @@
 import { updateLoginState } from "./index.js";
 
-
-
 export function createLayoutComponent() {
     return {
         template: `
@@ -15,23 +13,35 @@ export function createLayoutComponent() {
 
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/">Home</router-link>
                                 </li>
+
                                 <li class="nav-item">
                                     <router-link class="nav-link" to="/products">Products</router-link>
                                 </li>
-                                <li class="nav-item">
+
+                                <li v-if="isLoggedIn && userRole === 'Admin'" class="nav-item">
+                                    <router-link class="nav-link" to="/admin-users">All Users</router-link>
+                                </li>
+
+                                <li v-if="userRole !== 'Admin'" class="nav-item">
                                     <router-link class="nav-link" to="/cart">Cart</router-link>
                                 </li>
-                                <li v-if="isLoggedIn" class="nav-item">
+
+                                <li v-if="isLoggedIn && userRole !== 'Admin'" class="nav-item">
                                     <router-link class="nav-link" to="/orders">Orders</router-link>
                                 </li>
                             </ul>
 
                             <ul class="navbar-nav mb-2 mb-lg-0 navbar-right">
 
-                                <li v-if="isLoggedIn" class="nav-item">
+                                <span class="navbar-text me-3">
+                                    Role: {{ userRole }}
+                                </span>
+
+                                <li v-if="isLoggedIn && userRole !== 'Admin'" class="nav-item">
                                     <router-link class="nav-link" to="/change-password">Change Password</router-link>
                                 </li>
 
@@ -53,13 +63,19 @@ export function createLayoutComponent() {
 
         data() {
             return {
-                isLoggedIn: window.isLoggedIn
+                isLoggedIn: window.isLoggedIn,
+                userRole: window.userRole
             };
         },
 
         mounted() {
             window.addEventListener("auth-changed", (event) => {
                 this.isLoggedIn = event.detail;
+                this.$forceUpdate();
+            });
+
+            window.addEventListener("role-changed", (event) => {
+                this.userRole = event.detail;
                 this.$forceUpdate();
             });
         },

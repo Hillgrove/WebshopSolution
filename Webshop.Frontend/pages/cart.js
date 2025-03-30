@@ -74,7 +74,9 @@ export const CartPage = {
     },
 
     async mounted() {
-        await this.loadCart();
+        if (window.userRole === "Guest" || window.userRole === "Customer") {
+            await this.loadCart();
+        }
     },
 
     computed: {
@@ -85,6 +87,8 @@ export const CartPage = {
 
     methods: {
         async loadCart() {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             try {
                 const response = await axios.get("/Cart");
                 this.cart = response.data;
@@ -95,6 +99,8 @@ export const CartPage = {
         },
 
         async changeQuantity(productId, delta) {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             const item = this.cart.find(i => i.productId === productId);
             if (!item) return;
 
@@ -111,6 +117,8 @@ export const CartPage = {
         },
 
         async removeFromCart(productId) {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             try {
                 await axios.delete(`/Cart/${productId}`);
                 await this.loadCart();
@@ -121,6 +129,8 @@ export const CartPage = {
         },
 
         async checkout() {
+            if (!(window.userRole === "Guest" || window.userRole === "Customer")) return;
+
             try {
                 const response = await axios.post("/Cart/checkout");
                 alert("Order placed successfully!");
@@ -146,6 +156,8 @@ export const CartPage = {
         },
 
         async checkoutAsGuest() {
+            if (!(window.userRole === "Guest" )) return;
+
             try {
                 const response = await axios.post("/Cart/checkout");
                 alert("Order placed successfully as guest!");
