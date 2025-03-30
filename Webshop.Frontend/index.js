@@ -4,7 +4,6 @@
 import { HomePage } from "./pages/home.js";
 import { LoginPage } from "./pages/login.js";
 import { RegisterPage } from "./pages/register.js";
-import { AboutPage } from "./pages/about.js";
 import { ChangePasswordPage } from "./pages/changePassword.js";
 import { ForgotPasswordPage } from "./pages/forgotPassword.js";
 import { ResetPasswordPage } from "./pages/resetPassword.js";
@@ -13,6 +12,7 @@ import { createLayoutComponent } from "./layoutComponent.js";
 import { CartPage } from "./pages/cart.js";
 import { OrderConfirmationPage } from "./pages/orderConfirmation.js";
 import { OrderHistoryPage } from "./pages/orderHistory.js";
+import { AdminUsersPage } from "./pages/AdminUsers.js";
 
 
 // ============================
@@ -22,7 +22,6 @@ const routes = [
     { path: "/", component: HomePage },
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },
-    { path: "/about", component: AboutPage },
     { path: "/change-password", component: ChangePasswordPage },
     { path: "/forgot-password", component: ForgotPasswordPage },
     { path: "/reset-password", component: ResetPasswordPage },
@@ -30,6 +29,7 @@ const routes = [
     { path: "/cart", component: CartPage },
     { path: "/order-confirmation", component: OrderConfirmationPage },
     { path: "/orders", component: OrderHistoryPage },
+    { path: "/admin-users", component: AdminUsersPage }
 ];
 
 
@@ -54,11 +54,15 @@ axios.defaults.withCredentials = true; // Ensures cookies are sent with requests
 // Section: Global State Management
 // ============================
 window.isLoggedIn = false;
+window.userRole = "Guest";
 
-export function updateLoginState(status) {
+export function updateLoginState(status, role = "Guest") {
     window.isLoggedIn = status;
+    window.userRole = role;
     window.dispatchEvent(new CustomEvent("auth-changed", { detail: status }));
+    window.dispatchEvent(new CustomEvent("role-changed", { detail: role }));
 }
+
 
 
 // ============================
@@ -84,10 +88,10 @@ async function checkLoginStatus() {
     try {
         const response = await axios.get("/Users/me");
         if (response.data.role !== "Guest") {
-            updateLoginState(true);
+            updateLoginState(true, response.data.role);
         }
         else {
-            updateLoginState(false);
+            updateLoginState(false, "Guest");
         }
 
     } catch (error) {

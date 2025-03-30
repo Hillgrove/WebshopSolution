@@ -3,7 +3,6 @@ using Webshop.Data.Models;
 
 namespace Webshop.Data
 {
-    // TODO: Check if I need all the properties in the various commands
     public class UserRepositorySQLite : IUserRepository
     {
         private readonly string _connectionString;
@@ -83,7 +82,6 @@ namespace Webshop.Data
             return users;
         }
 
-        // TODO: Refactor code to use ID rather than Email entire application
         public async Task<User?> GetByIdAsync(int id)
         {
             using var connection = new SQLiteConnection(_connectionString);
@@ -141,7 +139,7 @@ namespace Webshop.Data
             using var connection = new SQLiteConnection(_connectionString);
             await connection.OpenAsync();
             
-            // TODO: add transactions to all db changes?
+            // TODO: add transactions to all db changes
             var command = new SQLiteCommand(connection)
             {
                 CommandText = @"
