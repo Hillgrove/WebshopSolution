@@ -11,6 +11,13 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
+            context.Response.OnStarting(() =>
+            {
+                // remove server fingerprinting info
+                context.Response.Headers.Remove("X-Powered-By");
+                return Task.CompletedTask;
+            });
+
             var headers = context.Response.Headers;
 
             // Add X-Content-Type-Options header
