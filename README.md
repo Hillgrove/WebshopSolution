@@ -1,17 +1,27 @@
-# Webshop Projekt – Obligatorisk Studieaktivitet
-
-## 📚 Projektbeskrivelse
+## 🛒 Webshop Projekt – 4. Semester Datamatiker  
+**Valgfag: Sikker Software**
 
 Dette projekt er udarbejdet som en obligatorisk studieaktivitet i valgfaget *Sikker Software*. Formålet er at designe og implementere en simpel webshop, hvor brugere kan oprette sig, gennemse produkter, lægge varer i kurv og foretage køb – alt sammen med fokus på sikkerhedsrelaterede best practices.
 
 ## 🧩 Funktionalitet
 
-- 🔐 Brugerhåndtering (registrering, login, logout, glemt/adgangskodeændring)
-- 🛒 Produkter og kurv (CRUD via API og visning i frontend)
-- 📦 Bestilling og ordreoversigt
-- 👤 Roller: `Guest`, `Customer`, `Admin`
-- 🌐 Frontend i Vue 3 + Vue Router
-- 🔙 Backend i C# (.NET 8 Web API)
+Webshoppen tilbyder følgende funktioner:
+
+### 👥 Brugerhåndtering
+- Registrering af nye brugere
+- Login og logout
+- Glemt adgangskode og ændring af adgangskode
+- Roller: `Guest`, `Customer`, `Admin`
+
+### 🛍️ Produkter og Kurv
+- Gennemse produkter
+- Tilføj produkter til kurv
+- Fjern produkter fra kurv
+- CRUD-operationer for produkter via API
+
+### 🛒 Bestilling
+- Afgiv ordre
+- Se ordreoversigt
 
 ## 🛠️ Teknologi-stack
 
@@ -21,7 +31,8 @@ Dette projekt er udarbejdet som en obligatorisk studieaktivitet i valgfaget *Sik
 | Backend    | ASP.NET Core Web API (C#)      |
 | Database   | SQLite (direkte via `System.Data.SQLite`) |
 | Kommunikation | RESTful API med `axios` og `withCredentials` |
-| Session    | `ISession` (HttpOnly, Secure, SameSite=None) |
+| Session    | Server-side loginstatus med sikre cookies (HttpOnly, Secure, SameSite=None) |
+
 
 ## 🗄️ Databasemodel
 
@@ -38,9 +49,10 @@ Relationel database uden brug af ORM. Tabellenavnene er:
 |-----------|---------------------------|
 | Guest     | Uidentificeret bruger     |
 | Customer  | Registreret kunde         |
-| Admin     | bruger med ekstra rettigheder
+| Admin     | Bruger med administrative rettigheder |
 
-## ⚙️ Sikkerhedsforanstaltninger
+
+## 🛡️ Sikkerhedsforanstaltninger
 
 Applikationen følger relevante principper fra [OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/), herunder:
 
@@ -66,5 +78,15 @@ Applikationen følger relevante principper fra [OWASP Application Security Verif
 - **API Security:**
   - CSRF-beskyttelse via validering af `Origin` header
   - Begrænsning af tilladte HTTP-metoder og oprindelser (CORS)
-
+ 
 Implementeringen af disse områder har til formål at efterleve godkendte sikkerhedsstandarder og mindske risikoen for kendte angrebsvektorer.
+
+## 🏗️ Videreudviklingsforslag
+
+- Implementering af to-faktor autentifikation
+- Logning og overvågning af sikkerhedshændelser
+- Integration med betalingsgateway
+- Enhedstest og integrationstest for kritiske funktioner
+- Deployment til Azure med CI/CD-pipeline
+
+
