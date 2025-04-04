@@ -1,6 +1,6 @@
 # 🛒 Webshop Projekt – Et studie i sikker software
 
-### 4. Semester obligatorisk opgave - Forår 2025
+### 4. Semester Obligatorisk Opgave - Forår 2025
 **Valgfag:** Sikker Software
 
 Dette projekt er udarbejdet som en obligatorisk studieaktivitet i valgfaget *Sikker Software*. Formålet er at designe og implementere en simpel webshop, hvor brugere kan oprette sig, gennemse produkter, lægge varer i kurv og foretage køb – alt sammen med fokus på sikkerhedsrelaterede best practices.
