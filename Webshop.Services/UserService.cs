@@ -155,7 +155,6 @@ namespace Webshop.Services
             }
 
             var resetLink = $"{referer}/#/reset-password";
-            //string? resetLink = "https://127.0.0.1:5500/#/reset-password";
 
             var token = await GenerateAndSavePasswordResetTokenAsync(user);
             await _emailService.SendPasswordResetEmail(user.Email, $"{resetLink}?token={token}");
