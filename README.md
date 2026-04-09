@@ -1,94 +1,186 @@
-# 🛒 Webshop Projekt – Et studie i sikker software
+# Webshop Projekt
 
-### 4. Semester Obligatorisk Opgave - Forår 2025
-**Valgfag:** Sikker Software
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?logo=vue.js)](https://vuejs.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite)](https://www.sqlite.org/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap)](https://getbootstrap.com/)
+[![Licens](https://img.shields.io/badge/Licens-MIT-blue)](LICENSE)
 
-Dette projekt er udarbejdet som en obligatorisk studieaktivitet i valgfaget *Sikker Software*. Formålet er at designe og implementere en simpel webshop, hvor brugere kan oprette sig, gennemse produkter, lægge varer i kurv og foretage køb – alt sammen med fokus på sikkerhedsrelaterede best practices.
+4. semester obligatorisk opgave i valgfaget **Sikker Software** (forår 2025).
 
-## 🧩 Funktionalitet
+Dette projekt er en simpel webshop, der demonstrerer sikkerhedsrelaterede best practices i overensstemmelse med [OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/). Applikationen er opdelt i en Vue 3-frontend og en ASP.NET Core 8 Web API-backend med SQLite som database.
 
-Webshoppen tilbyder følgende funktioner:
+---
 
-### 👥 Brugerhåndtering
-- Registrering af nye brugere
-- Login og logout
-- Glemt adgangskode og ændring af adgangskode
-- Roller: `Guest`, `Customer`, `Admin`
+## Indholdsfortegnelse
 
-### 🛍️ Produkter og Kurv
-- Gennemse produkter
-- Tilføj produkter til kurv
-- Fjern produkter fra kurv
-- CRUD-operationer for produkter via API
+- [Webshop Projekt](#webshop-projekt)
+  - [Indholdsfortegnelse](#indholdsfortegnelse)
+  - [Funktioner](#funktioner)
+    - [Brugerhåndtering](#brugerhåndtering)
+    - [Produkter og kurv](#produkter-og-kurv)
+    - [Bestilling](#bestilling)
+    - [Administration](#administration)
+  - [Teknologier](#teknologier)
+  - [Sikkerhedsforanstaltninger](#sikkerhedsforanstaltninger)
+  - [Kom i gang](#kom-i-gang)
+    - [Forudsætninger](#forudsætninger)
+    - [Installation](#installation)
+    - [Databaseopsætning](#databaseopsætning)
+  - [Projektstruktur](#projektstruktur)
+  - [Licens](#licens)
 
-### 🛒 Bestilling
-- Afgiv ordre
-- Se ordreoversigt
+---
 
-## 🛠️ Teknologi-stack
+## Funktioner
 
-| Lag        | Teknologi                      |
-|------------|--------------------------------|
-| Frontend   | HTML, Vue 3, Bootstrap 5       |
-| Backend    | ASP.NET Core Web API (C#)      |
-| Database   | SQLite (direkte via `System.Data.SQLite`) |
-| Kommunikation | RESTful API med `axios` og `withCredentials` |
-| Session    | Server-side loginstatus med sikre cookies (HttpOnly, Secure, SameSite=None) |
+### Brugerhåndtering
+- Registrering med adgangskodestyrkevalidering (zxcvbn)
+- Login og logout med rate limiting
+- Glemt adgangskode via e-mail med tidsbegrænset token
+- Skift adgangskode for indloggede brugere
+- Rollebaseret adgangsstyring: `Guest`, `Customer`, `Admin`
 
+### Produkter og kurv
+- Gennemse produktkatalog
+- Tilføj og fjern produkter fra kurv (sessionsbaseret)
+- CRUD-operationer for produkter (kun Admin)
 
-## 🗄️ Databasemodel
+### Bestilling
+- Afgiv ordre ved checkout
+- Se ordrehistorik pr. bruger
 
-Relationel database uden brug af ORM. Tabellenavnene er:
+### Administration
+- Administrationspanel til brugeroversigt og -håndtering
 
-- `Users`: Gemmer brugere og deres roller
-- `Products`: Produkter med navn, beskrivelse og pris i øre
-- `Orders`: Brugerens ordrer
-- `OrderItems`: Varer relateret til en ordre
+---
 
-## 🧾 Brugerroller
+## Teknologier
 
-| Rolle     | Beskrivelse               |
-|-----------|---------------------------|
-| Guest     | Uidentificeret bruger     |
-| Customer  | Registreret kunde         |
-| Admin     | Bruger med administrative rettigheder |
+| Lag                 | Teknologi                           | Version  |
+| ------------------- | ----------------------------------- | -------- |
+| Frontend            | Vue.js                              | 3        |
+| Frontend UI         | Bootstrap                           | 5.3.3    |
+| Frontend HTTP       | Axios                               | CDN      |
+| Backend framework   | ASP.NET Core Web API (C#)           | .NET 8.0 |
+| Database            | SQLite via System.Data.SQLite       | 1.0.119  |
+| Adgangskode-hashing | Argon2 (Isopoh.Cryptography.Argon2) | 2.0.0    |
+| Adgangskodestyrke   | zxcvbn-core                         | 7.0.92   |
+| E-mail              | MailKit / MimeKit                   | 4.10.0   |
+| API-dokumentation   | Swagger (Swashbuckle.AspNetCore)    | 6.6.2    |
+| JSON-serialisering  | Newtonsoft.Json                     | 13.0.3   |
 
+---
 
-## 🛡️ Sikkerhedsforanstaltninger
+## Sikkerhedsforanstaltninger
 
-Applikationen følger relevante principper fra [OWASP Application Security Verification Standard (ASVS)](https://owasp.org/www-project-application-security-verification-standard/), herunder:
+Applikationen implementerer udvalgte krav fra OWASP ASVS:
 
-- **Session Management:**
-  - Beskyttelse mod session fixation og sikre session cookies
-  - Automatisk session timeout ved inaktivitet
+- **Sessionhåndtering:** Sikre cookies (`HttpOnly`, `Secure`, `SameSite=None`, `__Host-`-præfiks), timeout ved inaktivitet (15 min.) og absolut maksimaltid (30 min.)
+- **Autentifikation:** Rate limiting på login og adgangskodegendannelse, Argon2-hashing af adgangskoder, validering mod kompromitterede adgangskoder
+- **Adgangskontrol:** Rollebaseret middleware og custom `SessionAuthorize`-attribut
+- **Inputvalidering:** Validering på API-niveau, begrænsning af Content-Type headers
+- **Sikkerhedsheadere:** `Content-Security-Policy`, `Strict-Transport-Security` (HSTS, 2 år), `X-Content-Type-Options`
+- **API-sikkerhed:** CSRF-beskyttelse via `Origin`-headervalidering, CORS-whitelist
 
-- **Authentication & Password Handling:**
-  - Sikring af login-flow med rate limiting
-  - Anvendelse af stærke hash-algoritmer til adgangskoder
-  - Gendannelse og ændring af adgangskoder med passende kontrol
+---
 
-- **Access Control:**
-  - Rollebaseret adgangsstyring med isolerede brugerroller
+## Kom i gang
 
-- **Input Validation:**
-  - Kontrol af input på API-niveau
-  - Begrænsning af uautoriserede Content-Type headers
+### Forudsætninger
 
-- **Security Headers:**
-  - Brug af HTTP-headers som `Content-Security-Policy`, `Strict-Transport-Security` og `X-Content-Type-Options`
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8)
+- En browser og en statisk filserver til frontend (f.eks. VS Code Live Server med HTTPS)
+- SMTP-adgang til e-mailafsendelse (konfigureres via User Secrets)
 
-- **API Security:**
-  - CSRF-beskyttelse via validering af `Origin` header
-  - Begrænsning af tilladte HTTP-metoder og oprindelser (CORS)
- 
-Implementeringen af disse områder har til formål at efterleve godkendte sikkerhedsstandarder og mindske risikoen for kendte angrebsvektorer.
+### Installation
 
-## 🏗️ Videreudviklingsforslag
+1. Klon repositoriet:
+   ```bash
+   git clone https://github.com/Hillgrove/WebshopSolution.git
+   cd WebshopSolution
+   ```
 
-- Implementering af to-faktor autentifikation
-- Logning og overvågning af sikkerhedshændelser
-- Integration med betalingsgateway
-- Enhedstest og integrationstest for kritiske funktioner
-- Deployment til Azure med CI/CD-pipeline
+2. Konfigurer User Secrets for API-projektet:
+   ```bash
+   cd Webshop.API
+   dotnet user-secrets set "Email:Host" "<smtp-host>"
+   dotnet user-secrets set "Email:Port" "<smtp-port>"
+   dotnet user-secrets set "Email:Username" "<smtp-bruger>"
+   dotnet user-secrets set "Email:Password" "<smtp-adgangskode>"
+   dotnet user-secrets set "Email:From" "<afsender@eksempel.dk>"
+   dotnet user-secrets set "PasswordReset:BaseUrl" "https://localhost:5500"
+   ```
 
+3. Byg og kør backend:
+   ```bash
+   dotnet run --project Webshop.API
+   ```
+   API'en starter på `https://localhost:7016`. Swagger UI er tilgængeligt på `/swagger`.
 
+4. Åbn frontend:
+   Serv indholdet af `Webshop.Frontend/` via en HTTPS-aktiveret statisk server (f.eks. VS Code Live Server på port 5500). Se [Docs/Cert_Generation.md](Docs/Cert_Generation.md) for opsætning af lokalt SSL-certifikat.
+
+### Databaseopsætning
+
+Databasen initialiseres automatisk ved opstart af API'et. `DatabaseInitializer` opretter følgende tabeller, hvis de ikke allerede eksisterer:
+
+| Tabel        | Beskrivelse                                     |
+| ------------ | ----------------------------------------------- |
+| `Users`      | Brugere med rolle og hashed adgangskode         |
+| `Products`   | Produkter med navn, beskrivelse og pris (i øre) |
+| `Orders`     | Ordrer knyttet til brugere                      |
+| `OrderItems` | Ordrelinjer med produktreference og antal       |
+
+En standardbruger med rollen `Admin` seedtes automatisk ved første opstart.
+
+---
+
+## Projektstruktur
+
+```
+WebshopSolution/
+├── Docs/                        # Supplerende dokumentation
+│   ├── Cert_Generation.md       # Vejledning til lokalt SSL-certifikat
+│   └── Password_Policy.md       # Adgangskodepolitik
+│
+├── Webshop.API/                 # ASP.NET Core Web API (startprojekt)
+│   ├── Attributes/              # Custom autorisationsattribut (SessionAuthorize)
+│   ├── Controllers/             # REST-controllere (Users, Products, Cart, Orders)
+│   ├── Database/                # SQLite-databasefil (webshop.db)
+│   ├── Middleware/              # Sikkerhedsmiddleware (CSRF, headers, roller)
+│   ├── appsettings.json         # Basiskonfiguration (port, database)
+│   └── Program.cs               # Dependency injection, middleware-pipeline
+│
+├── Webshop.Data/                # Dataadgangslag
+│   ├── Models/                  # Domænemodeller (User, Product, Order, OrderItem, CartItem)
+│   ├── Repositories/            # SQLite-implementationer og interfaces
+│   └── DatabaseInitializer.cs  # Skemaoprettelse og seed-data
+│
+├── Webshop.Services/            # Forretningslogik
+│   ├── UserService.cs           # Brugerregistrering, login, adgangskodehåndtering
+│   ├── HashingService.cs        # Argon2-hashing
+│   ├── PasswordService.cs       # Eksternt kald til kompromitteret-adgangskode-API
+│   ├── RateLimitingService.cs   # Rate limiting for login og gendannelse
+│   ├── EmailService.cs          # SMTP e-mailafsendelse
+│   └── ValidationService.cs     # E-mailformatvalidering
+│
+├── Webshop.Shared/              # Delte typer (DTOs og enums)
+│   ├── DTOs/                    # Data Transfer Objects (9 stk.)
+│   └── Enums/                   # Fejlkoder
+│
+├── Webshop.Frontend/            # Vue 3 SPA (serveres som statiske filer)
+│   ├── pages/                   # Sidekomponenter (11 stk.)
+│   ├── assets/                  # CSS- og JS-biblioteker (Bootstrap, Axios m.fl.)
+│   ├── index.html               # HTML-indgangspunkt
+│   ├── index.js                 # Vue Router og app-initialisering
+│   └── layoutComponent.js       # Navigationslayout og sessionsstyring
+│
+└── WebshopSolution.sln          # Visual Studio-solutionsfil
+```
+
+---
+
+## Licens
+
+Dette projekt er udgivet under [MIT-licensen](LICENSE).
